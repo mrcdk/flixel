@@ -1,6 +1,6 @@
 package flixel.system;
 
-#if !flash
+#if !(flash || bitfive)
 import flixel.FlxBasic;
 import flixel.FlxCamera;
 import flixel.FlxSprite;
@@ -50,7 +50,7 @@ class FlxBGSprite extends FlxSprite
 				continue;
 			}
 			
-			#if !js
+			#if !(js && !bitfive)
 			drawItem = camera.getDrawStackItem(cachedGraphics, isColored, _blendInt);
 			#else
 			drawItem = camera.getDrawStackItem(cachedGraphics, useAlpha);

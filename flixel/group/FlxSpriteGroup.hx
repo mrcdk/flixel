@@ -973,7 +973,7 @@ class FlxSpriteGroup extends FlxSprite
 	 * This functionality isn't supported in SpriteGroup
 	 * @return this sprite group
 	 */
-	#if flash
+	#if (flash || bitfive)
 	inline override private function calcFrame():Void
 	#else
 	inline override private function calcFrame(AreYouSure:Bool = false):Void

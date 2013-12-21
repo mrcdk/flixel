@@ -42,7 +42,7 @@ class CameraFrontEnd
 				continue;
 			}
 			
-			#if flash
+			#if (flash || bitfive)
 			camera.checkResize();
 			
 			if (useBufferLocking)
@@ -51,7 +51,7 @@ class CameraFrontEnd
 			}
 			#end
 			
-		#if !flash
+		#if !(flash || bitfive)
 			camera.clearDrawStack();
 			camera._canvas.graphics.clear();
 			// Clearing camera's debug sprite
@@ -60,7 +60,7 @@ class CameraFrontEnd
 			#end
 		#end
 			
-			#if flash
+			#if (flash || bitfive)
 			camera.fill(camera.bgColor, camera.useBgAlphaBlending);
 			camera.screen.dirty = true;
 			#else
@@ -69,7 +69,7 @@ class CameraFrontEnd
 		}
 	}
 	
-	#if !flash
+	#if !(flash || bitfive)
 	inline public function render():Void
 	{
 		for (camera in list)
@@ -96,7 +96,7 @@ class CameraFrontEnd
 			
 			camera.drawFX();
 			
-			#if flash
+			#if (flash || bitfive)
 			if (useBufferLocking)
 			{
 				camera.buffer.unlock();

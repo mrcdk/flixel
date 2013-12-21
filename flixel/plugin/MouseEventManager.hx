@@ -223,7 +223,7 @@ class MouseEventManager extends FlxPlugin
 			
 			if (Sprite.overlapsPoint(_point, true, camera))
 			{
-				#if flash
+				#if (flash || bitfive)
 				if (Sprite.pixelsOverlapPoint(_point, 0x0, camera))
 				#else
 				if (Sprite.pixelsOverlapPoint(_point, 0x01, camera))

@@ -163,7 +163,7 @@ class FlxText extends FlxSprite
 		allowCollisions = FlxObject.NONE;
 		moves = false;
 		
-		#if flash
+		#if (flash || bitfive)
 		calcFrame();
 		#else
 		if (Text != "")
@@ -476,13 +476,13 @@ class FlxText extends FlxSprite
 	/**
 	 * Internal function to update the current animation frame.
 	 */
-	#if flash
+	#if (flash || bitfive)
 	override private function calcFrame():Void
 	#else
 	override private function calcFrame(AreYouSure:Bool = false):Void
 	#end
 	{
-		#if !flash
+		#if !(flash || bitfive)
 		if (AreYouSure)
 		{
 		#end
@@ -628,7 +628,7 @@ class FlxText extends FlxSprite
 			{
 				framePixels.colorTransform(_flashRect, _colorTransform);
 			}
-		#if !flash
+		#if !(flash || bitfive)
 			origin.set(frameWidth * 0.5, frameHeight * 0.5);
 		}
 		#end
@@ -691,7 +691,7 @@ class FlxText extends FlxSprite
 	override public function draw():Void 
 	{
 		// Rarely
-		#if !flash
+		#if !(flash || bitfive)
 		if (_regen || dirty)	calcFrame(true);
 		#else
 		if (_regen)	calcFrame();

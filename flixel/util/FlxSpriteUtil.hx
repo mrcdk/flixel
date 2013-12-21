@@ -389,6 +389,7 @@ class FlxSpriteUtil
 			if (lineStyle.pixelHinting == null) { lineStyle.pixelHinting = false; }
 			if (lineStyle.miterLimit == null) 	{ lineStyle.miterLimit = 3; }
 			
+			#if !bitfive
 			flashGfx.lineStyle(lineStyle.thickness, 
 							color, 
 							alpha,
@@ -397,6 +398,9 @@ class FlxSpriteUtil
 							lineStyle.capsStyle,
 							lineStyle.jointStyle,
 							lineStyle.miterLimit);
+			#else
+			flashGfx.lineStyle(lineStyle.thickness, color, alpha);
+			#end
 		}
 	}
 	

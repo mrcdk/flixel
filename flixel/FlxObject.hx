@@ -360,7 +360,7 @@ class FlxObject extends FlxBasic
 		//get bounding box coordinates
 		var boundingBoxX:Float = x - (Camera.scroll.x * _scrollFactor.x); //copied from getScreenXY()
 		var boundingBoxY:Float = y - (Camera.scroll.y * _scrollFactor.y);
-		#if flash
+		#if (flash || bitfive)
 		var boundingBoxWidth:Int = Std.int(width);
 		var boundingBoxHeight:Int = Std.int(height);
 		#end
@@ -386,7 +386,7 @@ class FlxObject extends FlxBasic
 		}
 		
 		//fill static graphics object with square shape
-		#if flash
+		#if (flash || bitfive)
 		var gfx:Graphics = FlxSpriteUtil.flashGfx;
 		gfx.clear();
 		gfx.moveTo(boundingBoxX, boundingBoxY);

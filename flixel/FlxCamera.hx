@@ -114,7 +114,7 @@ class FlxCamera extends FlxBasic
 	 */
 	public var scroll:FlxPoint;
 	
-	#if flash
+	#if (flash || bitfive)
 	/**
 	 * The actual bitmap data of the camera display itself.
 	 */
@@ -129,7 +129,7 @@ class FlxCamera extends FlxBasic
 	 */
 	public var bgColor:Int;
 	
-	#if flash
+	#if (flash || bitfive)
 	/**
 	 * Sometimes it's easier to just work with a <code>FlxSprite</code> than it is to work directly with the <code>BitmapData</code> buffer.  
 	 * This sprite reference will allow you to do exactly that.
@@ -142,7 +142,7 @@ class FlxCamera extends FlxBasic
 	 */
 	private var _point:FlxPoint;
 	
-	#if flash
+	#if (flash || bitfive)
 	/**
 	 * Internal, used to render buffer to screen space.
 	 */
@@ -229,14 +229,14 @@ class FlxCamera extends FlxBasic
 	 */
 	private var _fxShakeDirection:Int;
 	
-	#if flash
+	#if (flash || bitfive)
 	/**
 	 * Internal helper variable for doing better wipes/fills between renders.
 	 */
 	private var _fill:BitmapData;
 	#end
 	
-	#if !flash
+	#if !(flash || bitfive)
 	/**
 	 * sprite for drawing (instead of _flashBitmap in flash)
 	 */
@@ -262,7 +262,7 @@ class FlxCamera extends FlxBasic
 	 */
 	private static var _storageHead:DrawStackItem;
 	
-	#if !js
+	#if !(js && !bitfive)
 	/*inline*/ public function getDrawStackItem(ObjGraphics:CachedGraphics, ObjColored:Bool, ObjBlending:Int, ObjAntialiasing:Bool = false):DrawStackItem
 	#else
 	/*inline*/ public function getDrawStackItem(ObjGraphics:CachedGraphics, UseAlpha:Bool, ObjAntialiasing:Bool = false):DrawStackItem
@@ -416,14 +416,14 @@ class FlxCamera extends FlxBasic
 		scroll = new FlxPoint();
 		_point = new FlxPoint();
 		bounds = null;
-		#if flash
+		#if (flash || bitfive)
 		screen = new FlxSprite();
 		buffer = new BitmapData(width, height, true, 0);
 		screen.pixels = buffer;
 		screen.origin.set();
 		#end
 		
-		#if flash
+		#if (flash || bitfive)
 		_flashBitmap = new Bitmap(buffer);
 		_flashBitmap.x = -width * 0.5;
 		_flashBitmap.y = -height * 0.5;
@@ -433,7 +433,7 @@ class FlxCamera extends FlxBasic
 		_canvas.y = -height * 0.5;
 		#end
 		
-		#if flash
+		#if (flash || bitfive)
 		color = 0xffffff;
 		#else
 		color = FlxColor.WHITE;
@@ -448,7 +448,7 @@ class FlxCamera extends FlxBasic
 		_flashSprite.x = x + _flashOffsetX;
 		_flashSprite.y = y + _flashOffsetY;
 		
-		#if flash
+		#if (flash || bitfive)
 		_flashSprite.addChild(_flashBitmap);
 		#else
 		_flashSprite.addChild(_canvas);
@@ -472,7 +472,7 @@ class FlxCamera extends FlxBasic
 		_fxShakeOffset = new FlxPoint();
 		_fxShakeDirection = 0;
 		
-		#if flash
+		#if (flash || bitfive)
 		_fill = new BitmapData(width, height, true, FlxColor.TRANSPARENT);
 		#else
 		
@@ -507,7 +507,7 @@ class FlxCamera extends FlxBasic
 	 */
 	override public function destroy():Void
 	{
-		#if flash
+		#if (flash || bitfive)
 		if (screen != null)
 		{
 			screen.destroy();
@@ -518,7 +518,7 @@ class FlxCamera extends FlxBasic
 		scroll = null;
 		deadzone = null;
 		bounds = null;
-		#if flash
+		#if (flash || bitfive)
 		buffer = null;
 		_flashBitmap = null;
 		#end
@@ -528,7 +528,7 @@ class FlxCamera extends FlxBasic
 		_fxFadeComplete = null;
 		_fxShakeComplete = null;
 		_fxShakeOffset = null;
-		#if flash
+		#if (flash || bitfive)
 		if (_fill != null)
 		{
 			_fill.dispose();
@@ -994,7 +994,7 @@ class FlxCamera extends FlxBasic
 	private function set_alpha(Alpha:Float):Float
 	{
 		alpha = FlxMath.bound(Alpha, 0, 1);
-		#if flash
+		#if (flash || bitfive)
 		_flashBitmap.alpha = Alpha;
 		#else
 		_canvas.alpha = Alpha;
@@ -1028,7 +1028,7 @@ class FlxCamera extends FlxBasic
 	private function set_color(Color:Int):Int
 	{
 		color = Color & 0x00ffffff;
-		#if flash
+		#if (flash || bitfive)
 		if (_flashBitmap != null)
 		{
 			var colorTransform:ColorTransform = _flashBitmap.transform.colorTransform;
@@ -1057,7 +1057,7 @@ class FlxCamera extends FlxBasic
 	private function set_antialiasing(Antialiasing:Bool):Bool
 	{
 		antialiasing = Antialiasing;
-		#if flash
+		#if (flash || bitfive)
 		_flashBitmap.smoothing = Antialiasing;
 		#end
 		return Antialiasing;
@@ -1105,7 +1105,7 @@ class FlxCamera extends FlxBasic
 	 */
 	public function fill(Color:Int, BlendAlpha:Bool = true, FxAlpha:Float = 1.0, graphics:Graphics = null):Void
 	{
-	#if flash
+	#if (flash || bitfive)
 		if (BlendAlpha)
 		{
 			_fill.fillRect(_flashRect, Color);
@@ -1144,7 +1144,7 @@ class FlxCamera extends FlxBasic
 		{
 			alphaComponent = (_fxFlashColor >> 24) & 255;
 			
-			#if flash
+			#if (flash || bitfive)
 			fill((Std.int(((alphaComponent <= 0) ? 0xff : alphaComponent) * _fxFlashAlpha) << 24) + (_fxFlashColor & 0x00ffffff));
 			#else
 			fill((_fxFlashColor & 0x00ffffff), true, ((alphaComponent <= 0) ? 0xff : alphaComponent) * _fxFlashAlpha / 255, _canvas.graphics);
@@ -1156,7 +1156,7 @@ class FlxCamera extends FlxBasic
 		{
 			alphaComponent = (_fxFadeColor >> 24) & 255;
 			
-			#if flash
+			#if (flash || bitfive)
 			fill((Std.int(((alphaComponent <= 0) ?0xff : alphaComponent) * _fxFadeAlpha) << 24) + (_fxFadeColor & 0x00ffffff));
 			#else
 			fill((_fxFadeColor & 0x00ffffff), true, ((alphaComponent <= 0) ?0xff : alphaComponent) * _fxFadeAlpha / 255, _canvas.graphics);
@@ -1175,7 +1175,7 @@ class FlxCamera extends FlxBasic
 		if (Value > 0)
 		{
 			width = Value; 
-			#if flash
+			#if (flash || bitfive)
 			if ( _flashBitmap != null )
 			{
 				regen = (Value != buffer.width);
@@ -1209,7 +1209,7 @@ class FlxCamera extends FlxBasic
 		if (Value > 0)
 		{
 			height = Value;
-			#if flash
+			#if (flash || bitfive)
 			if (_flashBitmap != null)
 			{
 				regen = (Value != buffer.height);
@@ -1249,7 +1249,7 @@ class FlxCamera extends FlxBasic
 		return useBgAlphaBlending = Value;
 	}
 	
-	#if flash
+	#if (flash || bitfive)
 	public function checkResize():Void
 	{
 		if (regen)

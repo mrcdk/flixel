@@ -88,7 +88,7 @@ class FlxTextField extends FlxText
 	 */
 	override private function get_pixels():BitmapData
 	{
-		#if !flash
+		#if !(flash || bitfive)
 		calcFrame(true);
 		#else
 		calcFrame();
@@ -156,7 +156,7 @@ class FlxTextField extends FlxText
 		
 		if (!_addedToDisplay)
 		{
-			#if !flash
+			#if !(flash || bitfive)
 			_camera._canvas.addChild(_textField);
 			#else
 			_camera._flashSprite.addChild(_textField);
@@ -229,7 +229,7 @@ class FlxTextField extends FlxText
 		{
 			if (Value != null)
 			{
-				#if !flash
+				#if !(flash || bitfive)
 				Value._canvas.addChild(_textField);
 				#else
 				Value._flashSprite.addChild(_textField);

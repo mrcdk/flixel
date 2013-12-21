@@ -107,7 +107,7 @@ class FlxSprite extends FlxObject
 	 */
 	public var blend(get, set):BlendMode;
 	private var _blend:BlendMode;
-	#if !flash
+	#if !(flash || bitfive)
 	private var _blendInt:Int = 0;
 	#end
 	/**
@@ -122,7 +122,7 @@ class FlxSprite extends FlxObject
 	/**
 	 * TODO: Needs docs
 	 */
-	#if !flash
+	#if !(flash || bitfive)
 	public var isColored:Bool;
 	private var _red:Float = 1.0;
 	private var _green:Float = 1.0;
@@ -236,7 +236,7 @@ class FlxSprite extends FlxObject
 			framePixels.dispose();
 		}
 		framePixels = null;
-		#if flash
+		#if (flash)
 		blend = null;
 		#else
 		_blend = null;
@@ -485,7 +485,7 @@ class FlxSprite extends FlxObject
 		region.width = cachedGraphics.bitmap.width;
 		region.height = cachedGraphics.bitmap.height;
 		
-		#if !flash
+		#if !(flash || bitfive)
 		antialiasing = AntiAliasing;
 		#end
 		
@@ -600,7 +600,7 @@ class FlxSprite extends FlxObject
 		
 		animation.frameName = Image;
 		
-		#if !flash
+		#if !(flash || bitfive)
 		antialiasing = AntiAliasing;
 		#else
 		var frameBitmapData:BitmapData = getFlxFrameBitmapData();
@@ -657,7 +657,7 @@ class FlxSprite extends FlxObject
 		_flashRect2.height = cachedGraphics.bitmap.height;
 		setOriginToCenter();
 		
-	#if flash
+	#if (flash || bitfive)
 		if ((framePixels == null) || (framePixels.width != frameWidth) || (framePixels.height != frameHeight))
 		{
 			framePixels = new BitmapData(Std.int(width), Std.int(height));
@@ -691,7 +691,7 @@ class FlxSprite extends FlxObject
 			cameras = FlxG.cameras.list;
 		}
 		
-	#if !flash
+	#if !(flash || bitfive)
 		var drawItem:DrawStackItem;
 		var currDrawData:Array<Float>;
 		var currIndex:Int;
@@ -712,7 +712,7 @@ class FlxSprite extends FlxObject
 				continue;
 			}
 			
-		#if !flash
+		#if !(flash || bitfive)
 			#if !js
 			drawItem = camera.getDrawStackItem(cachedGraphics, isColored, _blendInt, antialiasing);
 			#else
@@ -735,7 +735,7 @@ class FlxSprite extends FlxObject
 			_point.x = x - (camera.scroll.x * _scrollFactor.x) - (_offset.x);
 			_point.y = y - (camera.scroll.y * _scrollFactor.y) - (_offset.y);
 		#end
-#if flash
+#if (flash || bitfive)
 			if (isSimpleRender)
 			{
 				_flashPoint.x = Math.floor(_point.x);
@@ -884,7 +884,7 @@ class FlxSprite extends FlxObject
 			
 			resetFrameBitmapDatas();
 			
-			#if flash
+			#if (flash || bitfive)
 			calcFrame();
 			#end
 			return;
@@ -902,7 +902,7 @@ class FlxSprite extends FlxObject
 		var brushBlend:BlendMode = Brush.blend;
 		cachedGraphics.bitmap.draw(bitmapData, _matrix, null, brushBlend, null, Brush.antialiasing);
 		resetFrameBitmapDatas();
-		#if flash
+		#if (flash || bitfive)
 		calcFrame();
 		#end
 	}
@@ -914,7 +914,7 @@ class FlxSprite extends FlxObject
 	 */
 	inline public function drawFrame(Force:Bool = false):Void
 	{
-		#if flash
+		#if (flash || bitfive)
 		if (Force || dirty)
 		{
 			calcFrame();
@@ -1174,7 +1174,7 @@ class FlxSprite extends FlxObject
 		_point.y = _point.y - _offset.y;
 		_flashPoint.x = (point.x - Camera.scroll.x) - _point.x;
 		_flashPoint.y = (point.y - Camera.scroll.y) - _point.y;
-		#if flash
+		#if (flash || bitfive)
 		return untyped framePixels.hitTest(_flashPointZero, Mask, _flashPoint);
 		#else
 		// 1. Check to see if the point is outside of framePixels rectangle
@@ -1195,13 +1195,13 @@ class FlxSprite extends FlxObject
 	/**
 	 * Internal function to update the current animation frame.
 	 */
-	#if flash
+	#if (flash || bitfive)
 	private function calcFrame():Void
 	#else
 	private function calcFrame(AreYouSure:Bool = false):Void
 	#end
 	{
-	#if !flash
+	#if !(flash || bitfive)
 		// TODO: Maybe remove 'AreYouSure' parameter
 		if (AreYouSure)
 		{
@@ -1223,7 +1223,7 @@ class FlxSprite extends FlxObject
 			{
 				framePixels.colorTransform(_flashRect, _colorTransform);
 			}
-	#if !flash
+	#if !(flash || bitfive)
 		}
 	#end
 		
@@ -1291,7 +1291,7 @@ class FlxSprite extends FlxObject
 	 */
 	private function simpleRenderSprite():Bool
 	{ 
-		#if flash
+		#if (flash || bitfive)
 		return (((angle == 0) || (bakedRotation > 0)) && (_scale.x == 1) && (_scale.y == 1) && (blend == null) && (forceComplexRender == false));
 		#else
 		return (((angle == 0 && frame.additionalAngle == 0) || (bakedRotation > 0)) && (_scale.x == 1) && (_scale.y == 1));
@@ -1365,7 +1365,7 @@ class FlxSprite extends FlxObject
 			dirty = true;
 		}
 		facing = Direction;
-		#if !flash
+		#if !(flash || bitfive)
 		_facingMult = ((flipped != 0) && (facing == FlxObject.LEFT)) ? -1 : 1;
 		#end
 		return Direction;
@@ -1400,7 +1400,7 @@ class FlxSprite extends FlxObject
 		color = Color;
 		updateColorTransform();
 		
-		#if !flash
+		#if !(flash || bitfive)
 		_red = (color >> 16) / 255;
 		_green = (color >> 8 & 0xff) / 255;
 		_blue = (color & 0xff) / 255;
@@ -1446,7 +1446,7 @@ class FlxSprite extends FlxObject
 	
 	private function set_blend(Value:BlendMode):BlendMode 
 	{
-		#if !flash
+		#if !(flash || bitfive)
 		if (Value != null)
 		{
 			switch (Value)

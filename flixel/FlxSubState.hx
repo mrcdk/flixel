@@ -17,7 +17,7 @@ class FlxSubState extends FlxState
 	 */
 	public var closeCallback:Void->Void;
 	
-	#if !flash
+	#if !(flash || bitfive)
 	/**
 	 * Helper sprite object for non-flash targets. Draws background
 	 */
@@ -54,7 +54,7 @@ class FlxSubState extends FlxState
 		super();
 		closeCallback = null;
 		
-		#if !flash
+		#if !(flash || bitfive)
 		_bgSprite = new FlxBGSprite();
 		#end
 		bgColor = BGColor;
@@ -68,7 +68,7 @@ class FlxSubState extends FlxState
 	
 	override private function set_bgColor(Value:Int):Int
 	{
-		#if !flash
+		#if !(flash || bitfive)
 		if (_bgSprite != null)
 		{
 			_bgSprite.pixels.setPixel32(0, 0, Value);
@@ -81,7 +81,7 @@ class FlxSubState extends FlxState
 	override public function draw():Void
 	{
 		//Draw background
-		#if flash
+		#if (flash || bitfive)
 		if(cameras == null) { cameras = FlxG.cameras.list; }
 		var i:Int = 0;
 		var l:Int = cameras.length;

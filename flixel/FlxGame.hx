@@ -12,7 +12,7 @@ import flixel.system.replay.FlxReplay;
 import flixel.text.pxText.PxBitmapFont;
 import flixel.util.FlxRandom;
 
-#if flash
+#if (flash || bitfive)
 import flash.text.AntiAliasType;
 import flash.text.GridFitType;
 #end
@@ -251,7 +251,7 @@ class FlxGame extends Sprite
 	#end
 		
 		// Focus gained/lost monitoring
-		#if flash
+		#if (flash || bitfive)
 		stage.addEventListener(Event.DEACTIVATE, onFocusLost);
 		stage.addEventListener(Event.ACTIVATE, onFocus);
 		#else
@@ -699,7 +699,7 @@ class FlxGame extends Sprite
 		}
 		#end
 		
-		#if !flash
+		#if !(flash || bitfive)
 		FlxG.cameras.render();
 		
 		#if !FLX_NO_DEBUG

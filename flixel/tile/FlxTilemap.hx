@@ -131,7 +131,7 @@ class FlxTilemap extends FlxObject
 	/**
 	 * Internal representation of rectangles, one for each tile in the entire tilemap, used to speed up drawing.
 	 */
-	#if flash
+	#if (flash || bitfive)
 	private var _rects:Array<Rectangle>;
 	#end
 	/**
@@ -152,7 +152,7 @@ class FlxTilemap extends FlxObject
 	private var _tileObjects:Array<FlxTile>;
 	
 	#if !FLX_NO_DEBUG
-	#if flash
+	#if (flash || bitfive)
 	/**
 	 * Internal, used for rendering the debug bounding box display.
 	 */
@@ -211,7 +211,7 @@ class FlxTilemap extends FlxObject
 		_tileWidth = 0;
 		_tileHeight = 0;
 		
-		#if flash
+		#if (flash || bitfive)
 		_rects = null;
 		#if !FLX_NO_DEBUG
 		_debugRect = null;
@@ -224,7 +224,7 @@ class FlxTilemap extends FlxObject
 		moves = false;
 		cameras = null;
 		#if !FLX_NO_DEBUG
-		#if flash
+		#if (flash || bitfive)
 		_debugTileNotSolid = null;
 		_debugTilePartial = null;
 		_debugTileSolid = null;
@@ -276,7 +276,7 @@ class FlxTilemap extends FlxObject
 		
 		_data = null;
 		
-		#if flash
+		#if (flash || bitfive)
 		_rects = null;
 		#if !FLX_NO_DEBUG
 		_debugRect = null;
@@ -481,7 +481,7 @@ class FlxTilemap extends FlxObject
 		width = widthInTiles * _scaledTileWidth;
 		height = heightInTiles * _scaledTileHeight;
 		
-		#if flash
+		#if (flash || bitfive)
 		#if !FLX_NO_DEBUG
 		_debugRect = new Rectangle(0, 0, _tileWidth, _tileHeight);
 		#end
@@ -575,7 +575,7 @@ class FlxTilemap extends FlxObject
 	 */
 	private function drawTilemap(Buffer:FlxTilemapBuffer, Camera:FlxCamera):Void
 	{
-		#if flash
+		#if (flash || bitfive)
 		Buffer.fill();
 		#else
 		_helperPoint.x = x - Camera.scroll.x * scrollFactor.x; //copied from getScreenXY()
@@ -643,7 +643,7 @@ class FlxTilemap extends FlxObject
 			
 			while (column < screenColumns)
 			{
-				#if flash
+				#if (flash || bitfive)
 				_flashRect = _rects[columnIndex];
 				
 				if (_flashRect != null)
@@ -709,21 +709,21 @@ class FlxTilemap extends FlxObject
 				}
 				#end
 				
-				#if flash
+				#if (flash || bitfive)
 				_flashPoint.x += _tileWidth;
 				#end
 				column++;
 				columnIndex++;
 			}
 			
-			#if flash
+			#if (flash || bitfive)
 			_flashPoint.y += _tileHeight;
 			#end
 			rowIndex += widthInTiles;
 			row++;
 		}
 		
-		#if !flash
+		#if !(flash || bitfive)
 		drawItem.position = currIndex;
 		#end
 		
@@ -732,7 +732,7 @@ class FlxTilemap extends FlxObject
 	}
 	
 #if !FLX_NO_DEBUG
-	#if flash
+	#if (flash || bitfive)
 	override public function drawDebug():Void {  }
 	#else
 	override public function drawDebugOnCamera(?Camera:FlxCamera):Void
@@ -885,7 +885,7 @@ class FlxTilemap extends FlxObject
 			
 			buffer = _buffers[i++];
 			buffer.dirty = true;
-			#if flash
+			#if (flash || bitfive)
 			if (!buffer.dirty)
 			{
 				// Copied from getScreenXY()
@@ -2402,7 +2402,7 @@ class FlxTilemap extends FlxObject
 		
 		if ((tile == null) || !tile.visible)
 		{
-			#if flash
+			#if (flash || bitfive)
 			_rects[Index] = null;
 			#else
 			_rectIDs[Index] = -1;
@@ -2411,7 +2411,7 @@ class FlxTilemap extends FlxObject
 			return;
 		}
 		
-		#if flash
+		#if (flash || bitfive)
 		var rx:Int = (_data[Index] - _startingIndex) * (_tileWidth + region.spacingX);
 		var ry:Int = 0;
 		
@@ -2463,7 +2463,7 @@ class FlxTilemap extends FlxObject
 		
 		var rect:Rectangle = null;
 		
-		#if flash
+		#if (flash || bitfive)
 		rect = _rects[rowIndex];
 		#else
 		

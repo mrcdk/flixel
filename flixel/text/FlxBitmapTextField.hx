@@ -146,7 +146,7 @@ class FlxBitmapTextField extends FlxSprite
 		return Value;
 	}
 	
-	#if flash
+	#if (flash || bitfive)
 	override public function draw():Void 
 	{
 		if (_pendingTextChange)
@@ -209,7 +209,7 @@ class FlxBitmapTextField extends FlxSprite
 				#end
 			}
 			
-			#if !js
+			#if !js 
 			drawItem = camera.getDrawStackItem(cachedGraphics, true, _blendInt, antialiasing);
 			#else
 			drawItem = camera.getDrawStackItem(cachedGraphics, useAlpha);
