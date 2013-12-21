@@ -39,6 +39,9 @@ import flixel.system.input.gamepad.FlxGamepadManager;
 #if android
 import flixel.system.input.android.FlxAndroidKeys;
 #end
+#if js
+import flixel.system.frontEnds.HTML5FrontEnd;
+#end
 
 interface IDestroyable
 {
@@ -233,6 +236,14 @@ class FlxG
 	 * sounds and other things to manage or <code>play()</code> sounds.
 	 */
 	static public var sound(default, null):SoundFrontEnd = new SoundFrontEnd();
+	
+	#if js
+	/**
+	 * A reference to the <code>HTML5FrontEnd</code> object. Has some HTML5-specific things like
+	 * browser detection, browser dimensions etc...
+	 */
+	public static var html5(default, null):HTML5FrontEnd = new HTML5FrontEnd();
+	#end
 	
 	/**
 	 * Called by <code>FlxGame</code> to set up <code>FlxG</code> during <code>FlxGame</code>'s constructor.
