@@ -70,7 +70,7 @@ class FlxG
 	 * Assign a minor version to your library.
 	 * Appears after the decimal in the console.
 	 */
-	static public var LIBRARY_MINOR_VERSION:String = "0.2-html5";
+	static public var LIBRARY_MINOR_VERSION:String = "0.4-html5";
 	
 	/**
 	 * Internal tracker for game object.
