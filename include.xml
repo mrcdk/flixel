@@ -2,4 +2,6 @@
 <project>
 	<assets path="assets/images" rename="flixel/img" />
 	<assets path="assets/sounds" rename="flixel/snd" />
+	
+	<haxelib name="openfl-bitfive" if="html5" />
 </project>
