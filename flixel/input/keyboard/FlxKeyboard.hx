@@ -149,6 +149,32 @@ class FlxKeyboard implements IFlxInput
 		}
 		return keysDown;
 	}
+	
+	/**
+	 * Returns an array with all the FlxKeys available or the selected keys given by the array
+	 * 
+	 * @param	FromArray	(Optional) An array of keyCode strings
+	 * @return The array of FlxKey selected
+	 */
+	public function getFlxKeys(?FromArray:Array<String>):Array<FlxKey>
+	{
+		if (FromArray == null)
+		{
+			return _keyList;
+		}
+		
+		var result:Array<FlxKey> = new Array<FlxKey>();
+		FlxArrayUtil.setLength(result, FromArray.length);
+		
+		for (i in 0...(FromArray.length))
+		{
+			var code = FromArray[i].toUpperCase();
+			var mapping = _keyLookup.get(code);
+			result[i] = mapping == null ? null : _keyList[mapping];
+		}
+		
+		return result;
+	}
 
 	/**
 	 * Clean up memory.
@@ -505,6 +531,8 @@ class FlxKeyboard implements IFlxInput
 				else
 				{
 					obj.current = FlxKey.JUST_RELEASED;
+					obj.released_tick = Lib.getTimer();
+					obj.holded_ticks = obj.released_tick - obj.pressed_tick;
 				}
 			}
 			else 
@@ -512,6 +540,7 @@ class FlxKeyboard implements IFlxInput
 				if (Down)
 				{
 					obj.current = FlxKey.JUST_PRESSED;
+					obj.pressed_tick = Lib.getTimer();
 				}
 				else
 				{
