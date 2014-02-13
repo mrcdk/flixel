@@ -119,8 +119,20 @@ class FlxKey
 	 */
 	public var last:Int = RELEASED;
 	
+	/**
+	 * The time
+	 */
+	public var pressed_tick:Int = -1;
+	public var released_tick:Int = -1;
+	public var holded_ticks:Int = -1;
+	
 	public function new(Name:String)
 	{
 		name = Name;
+	}
+	
+	public function toString():String
+	{
+		return name + " Current: " + current + " Last: " + last + " Pressed @ " + pressed_tick + " Released @ " + released_tick + " Holded for " + holded_ticks;
 	}
 }
