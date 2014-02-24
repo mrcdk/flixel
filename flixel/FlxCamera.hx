@@ -395,6 +395,14 @@ class FlxCamera extends FlxBasic
 	@:allow(flixel.system.frontEnds.CameraFrontEnd)
 	private function render():Void
 	{
+		if (postProcesses != null)
+		{
+			for(postProcess in postProcesses)
+			{
+				postProcess.capture();
+			}
+		}
+		
 		var currItem:DrawStackItem = _headOfDrawStack;
 		while (currItem != null)
 		{
@@ -425,14 +433,6 @@ class FlxCamera extends FlxBasic
 				TileSheetExt._DRAWCALLS++;
 			}
 			currItem = currItem.next;
-		}
-		
-		if (postProcesses != null)
-		{
-			for(postProcess in postProcesses)
-			{
-				postProcess.capture();
-			}
 		}
 	}
 #end
