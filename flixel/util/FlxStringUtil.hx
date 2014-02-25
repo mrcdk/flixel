@@ -4,7 +4,9 @@ import flash.display.BitmapData;
 import flash.geom.Matrix;
 import flash.Lib;
 import flash.net.URLRequest;
+import flixel.FlxG;
 import flixel.system.FlxAssets;
+using StringTools;
 
 /**
  * A class primarily containing functions related 
@@ -41,7 +43,7 @@ class FlxStringUtil
 			timeString += "0";
 		}
 		timeString += timeStringHelper;
-		if(ShowMS)
+		if (ShowMS)
 		{
 			timeString += ".";
 			timeStringHelper = Std.int((Seconds - Std.int(Seconds)) * 100);
@@ -113,7 +115,7 @@ class FlxStringUtil
 		var string:String = "";
 		var comma:String = "";
 		var zeroes:String = "";
-		while(amount > 0)
+		while (amount > 0)
 		{
 			if((string.length > 0) && comma.length <= 0)
 			{
@@ -129,7 +131,7 @@ class FlxStringUtil
 			zeroes = "";
 			helper = amount - Math.floor(amount / 1000) * 1000;
 			amount = Math.floor(amount / 1000);
-			if(amount > 0)
+			if (amount > 0)
 			{
 				if (helper < 100)
 				{
@@ -142,7 +144,7 @@ class FlxStringUtil
 			}
 			string = zeroes + helper + comma + string;
 		}
-		if(ShowDecimal)
+		if (ShowDecimal)
 		{
 			amount = Std.int(Amount * 100) - (Std.int(Amount) * 100);
 			string += (EnglishStyle ? "." : ",") + amount;
@@ -435,7 +437,7 @@ class FlxStringUtil
 		{
 			column = 0;
 			
-			while(column < bitmapWidth)
+			while (column < bitmapWidth)
 			{
 				// Decide if this pixel/tile is solid (1) or not (0)
 				pixel = Bitmap.getPixel(column, row);
@@ -503,4 +505,33 @@ class FlxStringUtil
 		
 		return bitmapToCSV(tempBitmapData, Invert, Scale);
 	}
+	
+	/**
+	 * Helper function to create a string for toString() functions. Automatically rounds values according to FlxG.debugger.precision.
+	 * Strings are formatted in the format: (x: 50 | y: 60 | visible: false)
+	 * 
+	 * @param	LabelValuePairs		Array with the data for the string
+	 */
+	public static function getDebugString(LabelValuePairs:Array<LabelValuePair>):String
+	{
+		var output:String = "(";
+		for (pair in LabelValuePairs)
+		{
+			output += (pair.label + ": ");
+			var value:Dynamic = pair.value;
+			if (Std.is(value, Float))
+			{
+				value = FlxMath.roundDecimal(cast value, FlxG.debugger.precision);
+			}
+			output += (value + " | ");
+		}
+		// remove the | of the last item, we don't want that at the end
+		output = output.substr(0, output.length - 2).trim();
+		return (output + ")");
+	}
+}
+
+typedef LabelValuePair = {
+	label:String,
+	value:Dynamic
 }

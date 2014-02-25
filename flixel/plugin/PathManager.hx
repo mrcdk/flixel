@@ -48,22 +48,12 @@ class PathManager extends FlxPlugin
 	 */
 	override public function drawDebug():Void
 	{
-		if (!FlxG.debugger.drawDebug || ignoreDrawDebug)
+		if (FlxG.debugger.drawDebug && !ignoreDrawDebug)
 		{
-			return;	
-		}
-		
-		if (cameras == null)
-		{
-			cameras = FlxG.cameras.list;
-		}
-		
-		var i:Int = 0;
-		var l:Int = cameras.length;
-		
-		while (i < l)
-		{
-			drawDebugOnCamera(cameras[i++]);
+			for (camera in cameras)
+			{
+				drawDebugOnCamera(camera);
+			}
 		}
 	}
 	
@@ -84,7 +74,7 @@ class PathManager extends FlxPlugin
 		var i:Int = _paths.length - 1;
 		var path:FlxPath;
 		
-		while(i >= 0)
+		while (i >= 0)
 		{
 			path = _paths[i--];
 			

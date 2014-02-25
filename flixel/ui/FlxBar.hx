@@ -3,6 +3,7 @@ package flixel.ui;
 import flash.geom.Point;
 import flash.geom.Rectangle;
 import flash.display.BitmapData;
+import flixel.util.FlxStringUtil;
 
 import flixel.FlxG;
 import flixel.FlxBasic;
@@ -131,7 +132,7 @@ class FlxBar extends FlxSprite
 	 * @param	max			The maximum value the bar can reach. I.e. for a progress bar this would typically be 100.
 	 * @param	border		Include a 1px border around the bar? (if true it adds +2 to width and height to accommodate it)
 	 */
-	public function new(x:Float, y:Float, direction:Int = FILL_LEFT_TO_RIGHT, width:Int = 100, height:Int = 10, parentRef:Dynamic = null, variable:String = "", min:Float = 0, max:Float = 100, border:Bool = false)
+	public function new(x:Float = 0, y:Float = 0, direction:Int = FILL_LEFT_TO_RIGHT, width:Int = 100, height:Int = 10, parentRef:Dynamic = null, variable:String = "", min:Float = 0, max:Float = 100, border:Bool = false)
 	{
 		fixedPosition = true;
 		zeroOffset = new Point();
@@ -1004,23 +1005,14 @@ class FlxBar extends FlxSprite
 			return;
 		}
 		
-		if (cameras == null)
-		{
-			cameras = FlxG.cameras.list;
-		}
-		var camera:FlxCamera;
-		var i:Int = 0;
-		var l:Int = cameras.length;
-		
 		var percentFrame:Int = 2 * (Math.floor(percent) - 1);
 		
 		var currDrawData:Array<Float>;
 		var currIndex:Int;
 		var drawItem:DrawStackItem;
 		
-		while (i < l)
+		for (camera in cameras)
 		{
-			camera = cameras[i++];
 			if (!camera.visible || !camera.exists || !isOnScreen(camera))
 			{
 				continue;
@@ -1289,6 +1281,11 @@ class FlxBar extends FlxSprite
 	
 	override public function toString():String
 	{
-		return ("FlxBar - Min: " + min + " Max: " + max + " Range: " + range + " pct: " + pct + " pxp: " + pxPerPercent + " Value: " + value);
+		return FlxStringUtil.getDebugString([ { label: "min", value: min }, 
+		                                      { label: "max", value: max },
+		                                      { label: "range", value: range },
+		                                      { label: "%", value: pct },
+		                                      { label: "px/%", value: pxPerPercent },
+		                                      { label: "value", value: value } ]);
 	}
 }

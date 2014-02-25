@@ -640,11 +640,7 @@ class FlxTilemap extends FlxObject
 	 */
 	override public function draw():Void
 	{
-		if (cameras == null)
-		{
-			cameras = FlxG.cameras.list;
-		}
-		
+		var cameras = cameras;
 		var camera:FlxCamera;
 		var buffer:FlxTilemapBuffer;
 		var i:Int = 0;
@@ -1745,7 +1741,7 @@ class FlxTilemap extends FlxObject
 					{
 						tile = _tileObjects[_data[columnIndex]];
 						
-						if(tile != null)
+						if (tile != null)
 						{
 							if (tile.allowCollisions <= FlxObject.NONE)
 							{
@@ -1971,7 +1967,7 @@ class FlxTilemap extends FlxObject
 			{
 				currentIndex = current[i++];
 				
-				if(currentIndex == Std.int(EndIndex))
+				if (currentIndex == Std.int(EndIndex))
 				{
 					foundEnd = true;
 					// Neighbors.length = 0;

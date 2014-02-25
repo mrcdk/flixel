@@ -12,6 +12,7 @@ import flixel.util.FlxMath;
 import flixel.util.FlxPoint;
 import flixel.util.FlxRect;
 import flixel.util.FlxSpriteUtil;
+import flixel.util.FlxStringUtil;
 import flixel.util.FlxVelocity;
 import flixel.util.loaders.CachedGraphics;
 
@@ -159,12 +160,12 @@ class FlxObject extends FlxBasic
 	public var health:Float = 1;
 	/**
 	 * Bit field of flags (use with UP, DOWN, LEFT, RIGHT, etc) indicating surface contacts. Use bitwise operators to check the values 
-	 * stored here, or use touching(), justStartedTouching(), etc. You can even use them broadly as boolean values if you're feeling saucy!
+	 * stored here, or use isTouching(), justTouched(), etc. You can even use them broadly as boolean values if you're feeling saucy!
 	 */
 	public var touching:Int = NONE;
 	/**
 	 * Bit field of flags (use with UP, DOWN, LEFT, RIGHT, etc) indicating surface contacts from the previous game loop step. Use bitwise operators to check the values 
-	 * stored here, or use touching(), justStartedTouching(), etc. You can even use them broadly as boolean values if you're feeling saucy!
+	 * stored here, or use isTouching(), justTouched(), etc. You can even use them broadly as boolean values if you're feeling saucy!
 	 */
 	public var wasTouching:Int = NONE;
 	/**
@@ -189,10 +190,6 @@ class FlxObject extends FlxBasic
 	public var framesData(default, null):FlxSpriteFrames;
 	public var cachedGraphics(default, set):CachedGraphics;
 	/**
-	 * Internal statically typed FlxPoint vars, for performance reasons.
-	 */
-	
-	/**
 	 * Internal private static variables, for performance reasons.
 	 */
 	private var _point:FlxPoint;
@@ -200,9 +197,7 @@ class FlxObject extends FlxBasic
 	private static var _firstSeparateFlxRect:FlxRect = new FlxRect();
 	private static var _secondSeparateFlxRect:FlxRect = new FlxRect();
 	
-	
 	/**
-	 * Instantiates a FlxObject.
 	 * @param	X		The X-coordinate of the point in space.
 	 * @param	Y		The Y-coordinate of the point in space.
 	 * @param	Width	Desired width of the rectangle.
@@ -258,7 +253,6 @@ class FlxObject extends FlxBasic
 		maxVelocity = null;
 		scrollFactor = null;
 		last = null;
-		cameras = null;
 		_point = null;
 		scrollFactor = null;
 		
@@ -323,24 +317,14 @@ class FlxObject extends FlxBasic
 	 */
 	override public function draw():Void
 	{
-		if (cameras == null)
+		for (camera in cameras)
 		{
-			cameras = FlxG.cameras.list;
-		}
-		var camera:FlxCamera;
-		var i:Int = 0;
-		var l:Int = cameras.length;
-		while (i < l)
-		{
-			camera = cameras[i++];
-			if (!camera.visible || !camera.exists || !isOnScreen(camera))
+			if (camera.visible && camera.exists && isOnScreen(camera))
 			{
-				continue;
+				#if !FLX_NO_DEBUG
+				FlxBasic._VISIBLECOUNT++;
+				#end
 			}
-			
-			#if !FLX_NO_DEBUG
-			FlxBasic._VISIBLECOUNT++;
-			#end
 		}
 	}
 	
@@ -493,7 +477,7 @@ class FlxObject extends FlxBasic
 			var i:Int = 0;
 			var grp:FlxTypedGroup<FlxBasic> = cast ObjectOrGroup;
 			var members:Array<FlxBasic> = grp.members;
-			while(i < Std.int(grp.length))
+			while (i < Std.int(grp.length))
 			{
 				basic = members[i++];
 				if (basic != null && basic.exists && overlapsAt(X, Y, basic, InScreenSpace, Camera))
@@ -1073,8 +1057,11 @@ class FlxObject extends FlxBasic
 	 */
 	override public function toString():String
 	{
-		var p = FlxG.debugger.precision;
-		return "(x: " + FlxMath.roundDecimal(x, p) + " | y: " + FlxMath.roundDecimal(y, p) + " | w: " + FlxMath.roundDecimal(width, p) + " | h: " + FlxMath.roundDecimal(height, p) + 
-				" | visible: " +  visible + " | velocity: " +  Std.string(velocity) + ")"; 
+		return FlxStringUtil.getDebugString([ { label: "x", value: x }, 
+		                                      { label: "y", value: y },
+		                                      { label: "w", value: width },
+		                                      { label: "h", value: height },
+		                                      { label: "visible", value: visible },
+		                                      { label: "velocity", value: velocity }]);
 	}
 }
