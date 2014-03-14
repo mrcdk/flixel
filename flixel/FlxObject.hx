@@ -8,6 +8,7 @@ import flixel.group.FlxTypedGroup;
 import flixel.system.FlxCollisionType;
 import flixel.tile.FlxTilemap;
 import flixel.util.FlxColor;
+import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxPoint;
 import flixel.util.FlxRect;
 import flixel.util.FlxSpriteUtil;
@@ -492,20 +493,13 @@ class FlxObject extends FlxBasic
 	{
 		super.destroy();
 		
-		velocity.put();
-		acceleration.put();
-		drag.put();
-		scrollFactor.put();
-		last.put();
-		_point.put();
-		
-		velocity = null;
-		acceleration = null;
-		drag = null;
-		maxVelocity = null;
-		scrollFactor = null;
-		last = null;
-		_point = null;
+		velocity = FlxDestroyUtil.put(velocity);
+		acceleration = FlxDestroyUtil.put(acceleration);
+		drag = FlxDestroyUtil.put(drag);
+		maxVelocity = FlxDestroyUtil.put(maxVelocity);
+		scrollFactor = FlxDestroyUtil.put(scrollFactor);
+		last = FlxDestroyUtil.put(last);
+		_point = FlxDestroyUtil.put(_point);
 	}
 	
 	/**

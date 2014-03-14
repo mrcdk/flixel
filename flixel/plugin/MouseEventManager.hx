@@ -8,6 +8,7 @@ import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
 import flixel.util.FlxAngle;
+import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxPoint;
 
 /**
@@ -294,8 +295,7 @@ class MouseEventManager extends FlxPlugin
 	override public function destroy():Void
 	{
 		clearRegistry();
-		_point = null;
-		
+		_point = FlxDestroyUtil.put(_point);
 		super.destroy();
 	}
 	
@@ -314,7 +314,7 @@ class MouseEventManager extends FlxPlugin
 				continue;
 			}
 			
-			if (!reg.object.alive || !reg.sprite.exists || !reg.sprite.visible || !reg.mouseEnabled)
+			if (!reg.object.alive || !reg.object.exists || !reg.object.visible || !reg.mouseEnabled)
 			{
 				continue;
 			}
@@ -335,7 +335,7 @@ class MouseEventManager extends FlxPlugin
 		{
 			if (current.onMouseOver != null)
 			{
-				if (current.sprite.exists  && current.object.visible && getRegister(current.object, _mouseOverObjects) == null)
+				if (current.object.exists && current.object.visible && getRegister(current.object, _mouseOverObjects) == null)
 				{
 					current.onMouseOver(current.object);
 				}

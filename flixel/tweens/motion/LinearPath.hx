@@ -1,8 +1,10 @@
 package flixel.tweens.motion;
 
+import flixel.FlxG;
 import flixel.tweens.FlxEase.EaseFunction;
 import flixel.tweens.FlxTween.CompleteCallback;
 import flixel.util.FlxArrayUtil;
+import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxPoint;
 import flixel.util.FlxPool;
 
@@ -74,11 +76,11 @@ class LinearPath extends Motion
 		// recycle FlxPoints
 		for (point in points)
 		{
-			point.put();
+			point = FlxDestroyUtil.put(point);
 		}
-		_last = null;
-		_prevPoint = null;
-		_nextPoint = null;
+		_last = FlxDestroyUtil.put(_last);
+		_prevPoint = FlxDestroyUtil.put(_prevPoint);
+		_nextPoint = FlxDestroyUtil.put(_nextPoint);
 	}
 
 	/**

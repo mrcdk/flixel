@@ -9,6 +9,7 @@ import flixel.FlxSprite;
 import flixel.group.FlxTypedGroup;
 import flixel.system.FlxCollisionType;
 import flixel.system.layer.frames.FlxFrame;
+import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxPoint;
 import flixel.util.FlxSort;
 
@@ -94,12 +95,12 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	override public function destroy():Void
 	{
 		// normally don't have to destroy FlxPoints, but these are FlxCallbackPoints!
-		offset = FlxG.safeDestroy(offset);
-		origin = FlxG.safeDestroy(origin);
-		scale = FlxG.safeDestroy(scale);
-		scrollFactor = FlxG.safeDestroy(scrollFactor);
+		offset = FlxDestroyUtil.destroy(offset);
+		origin = FlxDestroyUtil.destroy(origin);
+		scale = FlxDestroyUtil.destroy(scale);
+		scrollFactor = FlxDestroyUtil.destroy(scrollFactor);
 		
-		group = FlxG.safeDestroy(group);
+		group = FlxDestroyUtil.destroy(group);
 		_sprites = null;
 		
 		super.destroy();
@@ -744,12 +745,12 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	/**
 	 * This functionality isn't supported in SpriteGroup
 	 */
-	override public function set_width(Value:Float):Float
+	override private function set_width(Value:Float):Float
 	{
 		return Value;
 	}
 	
-	override public function get_width():Float
+	override private function get_width():Float
 	{
 		if (length == 0)
 		{
@@ -779,12 +780,12 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	/**
 	 * This functionality isn't supported in SpriteGroup
 	 */
-	override public function set_height(Value:Float):Float
+	override private function set_height(Value:Float):Float
 	{
 		return Value;
 	}
 	
-	override public function get_height():Float
+	override private function get_height():Float
 	{
 		if (length == 0)
 		{

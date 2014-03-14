@@ -6,6 +6,7 @@ import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.group.FlxTypedGroup;
 import flixel.interfaces.IFlxParticle;
+import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxPoint;
 import flixel.util.FlxRandom;
 
@@ -182,9 +183,9 @@ class FlxTypedEmitter<T:(FlxSprite, IFlxParticle)> extends FlxTypedGroup<FlxSpri
 	 */
 	override public function destroy():Void
 	{
-		_point.put();
-		acceleration.put();
-		particleDrag.put();
+		_point = FlxDestroyUtil.put(_point);
+		acceleration = FlxDestroyUtil.put(acceleration);
+		particleDrag = FlxDestroyUtil.put(particleDrag);
 		
 		xPosition = null;
 		yPosition = null;
@@ -202,9 +203,6 @@ class FlxTypedEmitter<T:(FlxSprite, IFlxParticle)> extends FlxTypedGroup<FlxSpri
 		endGreen = null;
 		endBlue = null;
 		blend = null;
-		acceleration = null;
-		particleDrag = null;
-		_particleClass = null;
 		_point = null;
 		
 		super.destroy();

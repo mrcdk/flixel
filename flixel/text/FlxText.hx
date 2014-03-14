@@ -14,6 +14,7 @@ import flixel.system.FlxAssets;
 import flixel.text.FlxText.FlxTextFormat;
 import flixel.util.FlxArrayUtil;
 import flixel.util.FlxColor;
+import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxPoint;
 import flixel.util.loaders.CachedGraphics;
 import openfl.Assets;
@@ -201,8 +202,6 @@ class FlxText extends FlxSprite
 	 */
 	override public function destroy():Void
 	{
-		shadowOffset.put();
-		
 		_textField = null;
 		_defaultFormat = null;
 		_formatAdjusted = null;
@@ -219,7 +218,7 @@ class FlxText extends FlxSprite
 			}
 		}
 		_formats = null;
-		shadowOffset = null;
+		shadowOffset = FlxDestroyUtil.put(shadowOffset);
 		super.destroy();
 	}
 	
@@ -827,9 +826,7 @@ class FlxText extends FlxSprite
 		//Finally, update the visible pixels
 		if ((framePixels == null) || (framePixels.width != cachedGraphics.bitmap.width) || (framePixels.height != cachedGraphics.bitmap.height))
 		{
-			if (framePixels != null)
-				framePixels.dispose();
-			
+			framePixels = FlxDestroyUtil.dispose(framePixels);
 			framePixels = new BitmapData(cachedGraphics.bitmap.width, cachedGraphics.bitmap.height, true, 0);
 		}
 		
@@ -858,6 +855,9 @@ class FlxText extends FlxSprite
 	 */
 	#if (flash || js)
 	private function convertTextAlignmentFromString(StrAlign:String):TextFormatAlign
+	#else
+	private function convertTextAlignmentFromString(StrAlign:String):String
+	#end
 	{
 		if (StrAlign == "right")
 		{
@@ -876,12 +876,6 @@ class FlxText extends FlxSprite
 			return TextFormatAlign.LEFT;
 		}
 	}
-	#else
-	private function convertTextAlignmentFromString(StrAlign:String):String
-	{
-		return StrAlign;
-	}
-	#end
 	
 	private inline function updateFormat(Format:TextFormat):Void
 	{

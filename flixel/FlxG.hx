@@ -1,13 +1,11 @@
 package flixel;
 
-import flash.Lib;
 import flash.display.DisplayObject;
 import flash.display.Stage;
 import flash.display.StageDisplayState;
 import flash.Lib;
 import flash.net.URLRequest;
 import flixel.FlxBasic;
-import flixel.interfaces.IFlxDestroyable;
 import flixel.system.FlxAssets;
 import flixel.system.FlxQuadTree;
 import flixel.system.FlxVersion;
@@ -158,7 +156,24 @@ class FlxG
 	 * A FlxMouse object for mouse input. e.g.: check if the left mouse button 
 	 * is pressed with if (FlxG.mouse.pressed) { }) in update().
 	 */
-	public static var mouse(default, null):FlxMouse;
+	public static var mouse(default, set):FlxMouse;
+	private static function set_mouse(NewMouse:FlxMouse):FlxMouse
+	{
+		if (mouse == null)					//if no mouse, just add it
+		{
+			mouse = inputs.add(NewMouse);	//safe to do b/c it won't add repeats!
+			return mouse;
+		}
+		var oldMouse:FlxMouse = mouse;
+		var result:FlxMouse = inputs.replace(oldMouse, NewMouse);	//replace existing mouse
+		if (result != null)
+		{
+			mouse = result;
+			oldMouse.destroy();
+			return NewMouse;
+		}
+		return oldMouse;
+	}
 	#end
 	
 	#if !FLX_NO_TOUCH
@@ -360,21 +375,6 @@ class FlxG
 	public static inline function collide(?ObjectOrGroup1:FlxBasic, ?ObjectOrGroup2:FlxBasic, ?NotifyCallback:Dynamic->Dynamic->Void):Bool
 	{
 		return overlap(ObjectOrGroup1, ObjectOrGroup2, NotifyCallback, FlxObject.separate);
-	}
-	
-	/**
-	 * Checks if an object is not null before calling destroy(), always returns null.
-	 * 
-	 * @param	Object	An FlxBasic object that will be destroyed if it's not null.
-	 * @return	Null
-	 */
-	public static function safeDestroy<T:IFlxDestroyable>(Object:Null<IFlxDestroyable>):T
-	{
-		if (Object != null)
-		{
-			Object.destroy(); 
-		}
-		return null;
 	}
 	
 	/**

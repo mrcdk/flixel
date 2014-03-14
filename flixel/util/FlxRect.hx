@@ -2,13 +2,13 @@ package flixel.util;
 
 import flash.geom.Rectangle;
 import flixel.FlxG;
-import flixel.interfaces.IFlxDestroyable;
+import flixel.interfaces.IFlxPooled;
 import flixel.util.FlxStringUtil;
 
 /**
  * Stores a rectangle.
  */
-class FlxRect implements IFlxDestroyable
+class FlxRect implements IFlxPooled
 {
 	private static var _pool = new FlxPool<FlxRect>(FlxRect);
 	
@@ -21,7 +21,9 @@ class FlxRect implements IFlxDestroyable
 	 */
 	public static inline function get(X:Float = 0, Y:Float = 0, Width:Float = 0, Height:Float = 0):FlxRect
 	{
-		return _pool.get().set(X, Y, Width, Height);
+		var rect = _pool.get().set(X, Y, Width, Height);
+		rect._inPool = false;
+		return rect;
 	}
 	
 	public var x:Float;
@@ -49,12 +51,18 @@ class FlxRect implements IFlxDestroyable
 	 */
 	public var bottom(get, set):Float;
 	
+	private var _inPool:Bool = false;
+	
 	/**
 	 * Add this FlxRect to the recycling pool.
 	 */
 	public inline function put():Void
 	{
-		_pool.put(this);
+		if (!_inPool)
+		{
+			_inPool = true;
+			_pool.put(this);
+		}
 	}
 	
 	/**
