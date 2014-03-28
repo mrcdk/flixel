@@ -157,23 +157,6 @@ class FlxG
 	 * is pressed with if (FlxG.mouse.pressed) { }) in update().
 	 */
 	public static var mouse(default, set):FlxMouse;
-	private static function set_mouse(NewMouse:FlxMouse):FlxMouse
-	{
-		if (mouse == null)					//if no mouse, just add it
-		{
-			mouse = inputs.add(NewMouse);	//safe to do b/c it won't add repeats!
-			return mouse;
-		}
-		var oldMouse:FlxMouse = mouse;
-		var result:FlxMouse = inputs.replace(oldMouse, NewMouse);	//replace existing mouse
-		if (result != null)
-		{
-			mouse = result;
-			oldMouse.destroy();
-			return NewMouse;
-		}
-		return oldMouse;
-	}
 	#end
 	
 	#if !FLX_NO_TOUCH
@@ -411,14 +394,19 @@ class FlxG
 	}
 	
 	/**
-	 * Opens a web page, by default a new tab or window.
+	 * Opens a web page, by default a new tab or window. If the URL does not 
+	 * already start with "http://" or "https://", it gets added automatically.
 	 * 
 	 * @param	URL		The address of the web page.
 	 * @param	Target	"_blank", "_self", "_parent" or "_top"
 	 */
 	public static inline function openURL(URL:String, Target:String = "_blank"):Void
 	{
-		Lib.getURL(new URLRequest(URL), Target);
+		var prefix:String = "";
+		//if the URL does not already start with "http://" or "https://", add it.
+		if (!~/^https?:\/\//.match(URL))
+			prefix = "http://";
+		Lib.getURL(new URLRequest(prefix + URL), Target);
 	}
 	
 	/**
@@ -491,6 +479,26 @@ class FlxG
 		game.onResize();
 		return ScaleMode;
 	}
+	
+	#if !FLX_NO_MOUSE
+	private static function set_mouse(NewMouse:FlxMouse):FlxMouse
+	{
+		if (mouse == null)					//if no mouse, just add it
+		{
+			mouse = inputs.add(NewMouse);	//safe to do b/c it won't add repeats!
+			return mouse;
+		}
+		var oldMouse:FlxMouse = mouse;
+		var result:FlxMouse = inputs.replace(oldMouse, NewMouse);	//replace existing mouse
+		if (result != null)
+		{
+			mouse = result;
+			oldMouse.destroy();
+			return NewMouse;
+		}
+		return oldMouse;
+	}
+	#end
 	
 	private static inline function get_updateFramerate():Int
 	{
