@@ -18,6 +18,7 @@ import flixel.util.FlxAngle;
 import flixel.util.FlxColor;
 import flixel.util.FlxColorUtil;
 import flixel.util.FlxDestroyUtil;
+import flixel.util.FlxMath;
 import flixel.util.FlxPoint;
 import flixel.util.loaders.CachedGraphics;
 import flixel.util.loaders.TexturePackerData;
@@ -67,11 +68,11 @@ class FlxSprite extends FlxObject
 	/**
 	 * The width of the actual graphic or image being displayed (not necessarily the game object/bounding box).
 	 */
-	public var frameWidth(default, null):Int;
+	public var frameWidth(default, null):Int = 0;
 	/**
 	 * The height of the actual graphic or image being displayed (not necessarily the game object/bounding box).
 	 */
-	public var frameHeight(default, null):Int;
+	public var frameHeight(default, null):Int = 0;
 	/**
 	 * The total number of frames in this image.  WARNING: assumes each row in the sprite sheet is full!
 	 */
@@ -82,12 +83,6 @@ class FlxSprite extends FlxObject
 	public var region(default, null):Region;
 	public var framesData(default, null):FlxSpriteFrames;
 	public var cachedGraphics(default, set):CachedGraphics;
-	/**
-	 * Whether or not the coordinates should be rounded during draw(), true by default (recommended for pixel art). 
-	 * Only affects tilesheet rendering and rendering using BitmapData.draw() in blitting.
-	 * (copyPixels() only renders on whole pixels by nature). Causes draw() to be used if false, which is more expensive.
-	 */
-	public var pixelPerfectRender(default, set):Bool = true;
 	/**
 	 * The minimum angle (out of 360°) for which a new baked rotation exists. Example: 90 means there 
 	 * are 4 baked rotations in the spritesheet. 0 if this sprite does not have any baked rotations.
@@ -352,6 +347,7 @@ class FlxSprite extends FlxObject
 	/**
 	 * Create a pre-rotated sprite sheet from a simple sprite.
 	 * This can make a huge difference in graphical performance!
+	 * 
 	 * @param	Graphic			The image you want to rotate and stamp.
 	 * @param	Rotations		The number of rotation frames the final sprite should have.  For small sprites this can be quite a large number (360 even) without any problems.
 	 * @param	Frame			If the Graphic has a single row of square animation frames on it, you can specify which of the frames you want to use here.  Default is -1, or "use whole graphic."
@@ -502,11 +498,11 @@ class FlxSprite extends FlxObject
 	
 	/**
 	 * Loads TexturePacker atlas.
+	 * 
 	 * @param	Data		Atlas data holding links to json-data and atlas image
 	 * @param	Reverse		Whether you need this class to generate horizontally flipped versions of the animation frames. 
 	 * @param	Unique		Optional, whether the graphic should be a unique instance in the graphics cache.  Default is false.
 	 * @param	FrameName	Default frame to show. If null then will be used first available frame.
-	 * 
 	 * @return This FlxSprite instance (nice for chaining stuff together, if you're into that).
 	 */
 	public function loadGraphicFromTexture(Data:Dynamic, Reverse:Bool = false, Unique:Bool = false, ?FrameName:String):FlxSprite
@@ -547,19 +543,19 @@ class FlxSprite extends FlxObject
 		}
 		
 		resetSizeFromFrame();
-		setOriginToCenter();
+		centerOrigin();
 		return this;
 	}
 	
 	/**
 	 * Creates a pre-rotated sprite sheet from provided image in atlas.
 	 * This can make a huge difference in graphical performance on flash target!
+	 * 
 	 * @param	Data			Atlas data holding links to json-data and atlas image
 	 * @param	Image			The image from atlas you want to rotate and stamp.
 	 * @param	Rotations		The number of rotation frames the final sprite should have.  For small sprites this can be quite a large number (360 even) without any problems.
 	 * @param	AntiAliasing	Whether to use high quality rotations when creating the graphic.  Default is false.
 	 * @param	AutoBuffer		Whether to automatically increase the image size to accomodate rotated corners.
-	 * 
 	 * @return This FlxSprite instance (nice for chaining stuff together, if you're into that).
 	 */
 	public function loadRotatedGraphicFromTexture(Data:Dynamic, Image:String, Rotations:Int = 16, AntiAliasing:Bool = false, AutoBuffer:Bool = false):FlxSprite
@@ -638,15 +634,6 @@ class FlxSprite extends FlxObject
 	}
 	
 	/**
-	 * Sets the sprite's origin to its center - useful after adjusting 
-	 * scale to make sure rotations work as expected.
-	 */
-	public inline function setOriginToCenter():Void
-	{
-		origin.set(frameWidth * 0.5, frameHeight * 0.5);
-	}
-	
-	/**
 	 * Helper function to set the graphic's dimensions by using scale, allowing you to keep the current aspect ratio
 	 * should one of the Integers be <= 0. It might make sense to call updateHitbox() afterwards!
 	 * 
@@ -683,7 +670,7 @@ class FlxSprite extends FlxObject
 		width = newWidth;
 		height = newHeight;
 		offset.set( - ((newWidth - frameWidth) * 0.5), - ((newHeight - frameHeight) * 0.5));
-		setOriginToCenter();
+		centerOrigin();
 	}
 	
 	/**
@@ -696,7 +683,7 @@ class FlxSprite extends FlxObject
 		_flashRect2.y = 0;
 		_flashRect2.width = cachedGraphics.bitmap.width;
 		_flashRect2.height = cachedGraphics.bitmap.height;
-		setOriginToCenter();
+		centerOrigin();
 		
 	#if FLX_RENDER_BLIT
 		if ((framePixels == null) || (framePixels.width != frameWidth) || (framePixels.height != frameHeight))
@@ -725,7 +712,12 @@ class FlxSprite extends FlxObject
 	 */
 	override public function draw():Void
 	{
-		if (alpha == 0)	
+		#if !FLX_NO_DEBUG
+		if (FlxG.debugger.drawDebug)
+			drawDebug();
+		#end
+		
+		if (alpha == 0)
 		{
 			return;
 		}
@@ -982,6 +974,15 @@ class FlxSprite extends FlxObject
 			x += offset.x;
 			y += offset.y;
 		}
+	}
+
+	/**
+	 * Sets the sprite's origin to its center - useful after adjusting 
+	 * scale to make sure rotations work as expected.
+	 */
+	public inline function centerOrigin():Void
+	{
+		origin.set(frameWidth * 0.5, frameHeight * 0.5);
 	}
 	
 	/**
@@ -1299,7 +1300,7 @@ class FlxSprite extends FlxObject
 			}
 			
 			var radius:Float = Math.max(radiusX, radiusY);
-			radius *= 1.415; // Math.sqrt(2);
+			radius *= FlxMath.SQUARE_ROOT_OF_TWO;
 			
 			minX += origin.x;
 			maxX = minX + radius;
@@ -1330,6 +1331,24 @@ class FlxSprite extends FlxObject
 		#else
 		return (((angle == 0 && frame.additionalAngle == 0) || (bakedRotationAngle > 0)) && (scale.x == 1) && (scale.y == 1));
 		#end
+	}
+
+	/**
+	 * Flips graphics horizontally
+	 *
+	 */
+	public function flipHorizontally():Void
+	{
+		scale.x *= -1;
+	}
+
+	/**
+	 * Flips graphics vertically
+	 *
+	 */
+	public function flipVertically():Void
+	{
+		scale.y *= -1;
 	}
 	
 	/**
@@ -1500,10 +1519,5 @@ class FlxSprite extends FlxObject
 		}
 		
 		return cachedGraphics = Value;
-	}
-	
-	private function set_pixelPerfectRender(Value:Bool):Bool 
-	{
-		return pixelPerfectRender = Value;
 	}
 }

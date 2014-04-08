@@ -4,6 +4,7 @@ import flixel.FlxCameraTest;
 import flixel.FlxGTest;
 import flixel.FlxSpriteTest;
 import flixel.FlxStateTest;
+import flixel.util.FlxSignalTest;
 import FlxTest;
 
 /**
@@ -12,16 +13,16 @@ import FlxTest;
  */
 
 class TestSuite extends massive.munit.TestSuite
-{		
-
+{
 	public function new()
 	{
 		super();
-
-		add(flixel.FlxCameraTest);
-		add(flixel.FlxGTest);
-		add(flixel.FlxSpriteTest);
-		add(flixel.FlxStateTest);
+		
+		add(FlxCameraTest);
+		add(FlxGTest);
+		add(FlxSpriteTest);
+		add(FlxStateTest);
+		add(FlxSignalTest);
 		add(FlxTest);
 	}
 }

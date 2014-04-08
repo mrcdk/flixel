@@ -335,6 +335,21 @@ class FlxObject extends FlxBasic
 	@:isVar
 	public var height(get, set):Float;
 	/**
+	 * Gets ot sets the first camera of this object.
+	 */
+	public var camera(get, set):FlxCamera;
+	/**
+	 * This determines on which FlxCameras this object will be drawn. If it is null / has not been
+	 * set, it uses FlxCamera.defaultCameras, which is a reference to FlxG.cameras.list (all cameras) by default.
+	 */
+	public var cameras(get, set):Array<FlxCamera>;
+	/**
+	 * Whether or not the coordinates should be rounded during draw(), true by default (recommended for pixel art). 
+	 * Only affects tilesheet rendering and rendering using BitmapData.draw() in blitting.
+	 * (copyPixels() only renders on whole pixels by nature). Causes draw() to be used if false, which is more expensive.
+	 */
+	public var pixelPerfectRender(default, set):Bool = true;
+	/**
 	 * Set the angle of a sprite to rotate it. WARNING: rotating sprites decreases rendering
 	 * performance for this sprite by a factor of 10x (in Flash target)!
 	 */
@@ -382,7 +397,6 @@ class FlxObject extends FlxBasic
 	 * By default this value is set automatically during preUpdate().
 	 */
 	public var last(default, null):FlxPoint;
-	
 	/**
 	 * The virtual mass of the object. Default value is 1. Currently only used with elasticity 
 	 * during collision resolution. Change at your own risk; effects seem crazy unpredictable so far!
@@ -438,12 +452,18 @@ class FlxObject extends FlxBasic
 	 * Overriding this will force a specific color to be used for debug rect.
 	 */
 	public var debugBoundingBoxColor:Null<Int> = null;
+	/**
+	 * Setting this to true will prevent the object from appearing
+	 * when FlxG.debugger.drawDebug is true.
+	 */
+	public var ignoreDrawDebug:Bool = false;
 	#end
 	
 	/**
 	 * Internal private static variables, for performance reasons.
 	 */
 	private var _point:FlxPoint;
+	private var _cameras:Array<FlxCamera>;
 	
 	/**
 	 * @param	X		The X-coordinate of the point in space.
@@ -502,6 +522,7 @@ class FlxObject extends FlxBasic
 		scrollFactor = FlxDestroyUtil.put(scrollFactor);
 		last = FlxDestroyUtil.put(last);
 		_point = FlxDestroyUtil.put(_point);
+		_cameras = null;
 	}
 	
 	/**
@@ -511,7 +532,8 @@ class FlxObject extends FlxBasic
 	override public function update():Void 
 	{
 		#if !FLX_NO_DEBUG
-		FlxBasic._ACTIVECOUNT++;
+		// this just increments FlxBasic._ACTIVECOUNT, no need to waste a function call on release
+		super.update();
 		#end
 		
 		last.x = x;
@@ -532,19 +554,16 @@ class FlxObject extends FlxBasic
 	 */
 	private inline function updateMotion():Void
 	{
-		var delta:Float;
-		var velocityDelta:Float;
-		
 		var dt:Float = FlxG.elapsed;
 		
-		velocityDelta = 0.5 * (FlxVelocity.computeVelocity(angularVelocity, angularAcceleration, angularDrag, maxAngular) - angularVelocity);
+		var velocityDelta = 0.5 * (FlxVelocity.computeVelocity(angularVelocity, angularAcceleration, angularDrag, maxAngular) - angularVelocity);
 		angularVelocity += velocityDelta; 
 		angle += angularVelocity * dt;
 		angularVelocity += velocityDelta;
 		
 		velocityDelta = 0.5 * (FlxVelocity.computeVelocity(velocity.x, acceleration.x, drag.x, maxVelocity.x) - velocity.x);
 		velocity.x += velocityDelta;
-		delta = velocity.x * dt;
+		var delta = velocity.x * dt;
 		velocity.x += velocityDelta;
 		x += delta;
 		
@@ -560,91 +579,12 @@ class FlxObject extends FlxBasic
 	 */
 	override public function draw():Void
 	{
-		for (camera in cameras)
-		{
-			if (camera.visible && camera.exists && isOnScreen(camera))
-			{
-				#if !FLX_NO_DEBUG
-				FlxBasic._VISIBLECOUNT++;
-				#end
-			}
-		}
-	}
-	
-	#if !FLX_NO_DEBUG
-	/**
-	 * Override this function to draw custom "debug mode" graphics to the
-	 * specified camera while the debugger's visual mode is toggled on.
-	 * 
-	 * @param	Camera	Which camera to draw the debug visuals to.
-	 */
-	override public function drawDebugOnCamera(?Camera:FlxCamera):Void
-	{
-		if (Camera == null)
-		{
-			Camera = FlxG.camera;
-		}
-		
-		if (!Camera.visible || !Camera.exists || !isOnScreen(Camera))
-		{
-			return;
-		}
-		
-		//get bounding box coordinates
-		var boundingBoxX:Float = x - (Camera.scroll.x * scrollFactor.x); //copied from getScreenXY()
-		var boundingBoxY:Float = y - (Camera.scroll.y * scrollFactor.y);
-		
-		#if FLX_RENDER_BLIT
-		var boundingBoxWidth:Int = Std.int(width);
-		var boundingBoxHeight:Int = Std.int(height);
-		#end
-		
-		// Find the color to use
-		var color:Null<Int> = debugBoundingBoxColor;
-		if (color == null)
-		{
-			if (allowCollisions != FlxObject.NONE)
-			{
-				if (allowCollisions != ANY)
-				{
-					color = FlxColor.PINK;
-				}
-				if (immovable)
-				{
-					color = FlxColor.GREEN;
-				}
-				else
-				{
-					color = FlxColor.RED;
-				}
-			}
-			
-			// if there's still no color...
-			if (color == null)
-			{
-				color = FlxColor.BLUE;
-			}
-		}
-		
-		//fill static graphics object with square shape
-		#if FLX_RENDER_BLIT
-		var gfx:Graphics = FlxSpriteUtil.flashGfx;
-		gfx.clear();
-		gfx.moveTo(boundingBoxX, boundingBoxY);
-		gfx.lineStyle(1, color, 0.5);
-		gfx.lineTo(boundingBoxX + boundingBoxWidth, boundingBoxY);
-		gfx.lineTo(boundingBoxX + boundingBoxWidth, boundingBoxY + boundingBoxHeight);
-		gfx.lineTo(boundingBoxX, boundingBoxY + boundingBoxHeight);
-		gfx.lineTo(boundingBoxX, boundingBoxY);
-		//draw graphics shape to camera buffer
-		Camera.buffer.draw(FlxSpriteUtil.flashGfxSprite);
-		#else
-		var gfx:Graphics = Camera.debugLayer.graphics;
-		gfx.lineStyle(1, color, 0.5);
-		gfx.drawRect(boundingBoxX, boundingBoxY, width, height);
+		#if !FLX_NO_DEBUG
+		super.draw();
+		if (FlxG.debugger.drawDebug)
+			drawDebug();
 		#end
 	}
-	#end
 	
 	/**
 	 * Checks to see if some FlxObject overlaps this FlxObject or FlxGroup. If the group has a LOT of things in it, 
@@ -657,10 +597,10 @@ class FlxObject extends FlxBasic
 	 */
 	public function overlaps(ObjectOrGroup:FlxBasic, InScreenSpace:Bool = false, ?Camera:FlxCamera):Bool
 	{
-		var groupResult:Bool = FlxGroup.overlaps(overlapsCallback, ObjectOrGroup, 0, 0, InScreenSpace, Camera);
-		if (groupResult)
+		var group:FlxGroup = FlxGroup.resolveGroup(ObjectOrGroup);
+		if (group != null) // if it is a group
 		{
-			return true;
+			return FlxGroup.overlaps(overlapsCallback, group, 0, 0, InScreenSpace, Camera);
 		}
 		
 		if (ObjectOrGroup.collisionType == FlxCollisionType.TILEMAP)
@@ -687,7 +627,7 @@ class FlxObject extends FlxBasic
 				(objectScreenPos.y + object.height > _point.y) && (objectScreenPos.y < _point.y + height);
 	}
 	
-	private inline function overlapsCallback(ObjectOrGroup:FlxBasic, X:Float, Y:Float, InScreenSpace:Bool, Camera:FlxCamera):Bool
+	private function overlapsCallback(ObjectOrGroup:FlxBasic, X:Float, Y:Float, InScreenSpace:Bool, Camera:FlxCamera):Bool
 	{
 		return overlaps(ObjectOrGroup, InScreenSpace, Camera);
 	}
@@ -705,10 +645,10 @@ class FlxObject extends FlxBasic
 	 */
 	public function overlapsAt(X:Float, Y:Float, ObjectOrGroup:FlxBasic, InScreenSpace:Bool = false, ?Camera:FlxCamera):Bool
 	{
-		var groupResult:Bool = FlxGroup.overlaps(overlapsAtCallback, ObjectOrGroup, X, Y, InScreenSpace, Camera);
-		if (groupResult)
+		var group:FlxGroup = FlxGroup.resolveGroup(ObjectOrGroup);
+		if (group != null) // if it is a group
 		{
-			return true;
+			return FlxGroup.overlaps(overlapsCallback, group, 0, 0, InScreenSpace, Camera);
 		}
 		
 		if (ObjectOrGroup.collisionType == FlxCollisionType.TILEMAP)
@@ -909,7 +849,108 @@ class FlxObject extends FlxBasic
 		height = Height;
 	}
 	
-	private function set_x(NewX:Float):Float
+	#if !FLX_NO_DEBUG
+	public function drawDebug():Void
+	{
+		if (!ignoreDrawDebug)
+		{
+			for (camera in cameras)
+			{
+				drawDebugOnCamera(camera);
+			}
+		}
+	}
+	
+	/**
+	 * Override this function to draw custom "debug mode" graphics to the
+	 * specified camera while the debugger's drawDebug mode is toggled on.
+	 * 
+	 * @param	Camera	Which camera to draw the debug visuals to.
+	 */
+	public function drawDebugOnCamera(Camera:FlxCamera):Void
+	{
+		if (!Camera.visible || !Camera.exists || !isOnScreen(Camera))
+		{
+			return;
+		}
+		
+		//get bounding box coordinates
+		var boundingBoxX:Float = x - (Camera.scroll.x * scrollFactor.x); //copied from getScreenXY()
+		var boundingBoxY:Float = y - (Camera.scroll.y * scrollFactor.y);
+		
+		if (pixelPerfectRender)
+		{
+			boundingBoxX = Math.floor(boundingBoxX);
+			boundingBoxY = Math.floor(boundingBoxY);
+		}
+		
+		#if FLX_RENDER_BLIT
+		var boundingBoxWidth:Int = Std.int(width);
+		var boundingBoxHeight:Int = Std.int(height);
+		#end
+		
+		// Find the color to use
+		var color:Null<Int> = debugBoundingBoxColor;
+		if (color == null)
+		{
+			if (allowCollisions != FlxObject.NONE)
+			{
+				if (allowCollisions != ANY)
+				{
+					color = FlxColor.PINK;
+				}
+				if (immovable)
+				{
+					color = FlxColor.GREEN;
+				}
+				else
+				{
+					color = FlxColor.RED;
+				}
+			}
+			
+			// if there's still no color...
+			if (color == null)
+			{
+				color = FlxColor.BLUE;
+			}
+		}
+		
+		//fill static graphics object with square shape
+		#if FLX_RENDER_BLIT
+		var gfx:Graphics = FlxSpriteUtil.flashGfx;
+		gfx.clear();
+		gfx.moveTo(boundingBoxX, boundingBoxY);
+		gfx.lineStyle(1, color, 0.5);
+		gfx.lineTo(boundingBoxX + boundingBoxWidth, boundingBoxY);
+		gfx.lineTo(boundingBoxX + boundingBoxWidth, boundingBoxY + boundingBoxHeight);
+		gfx.lineTo(boundingBoxX, boundingBoxY + boundingBoxHeight);
+		gfx.lineTo(boundingBoxX, boundingBoxY);
+		//draw graphics shape to camera buffer
+		Camera.buffer.draw(FlxSpriteUtil.flashGfxSprite);
+		#else
+		var gfx:Graphics = Camera.debugLayer.graphics;
+		gfx.lineStyle(1, color, 0.5);
+		gfx.drawRect(boundingBoxX, boundingBoxY, width, height);
+		#end
+	}
+	#end
+	
+	/**
+	 * Convert object to readable string name.  Useful for debugging, save games, etc.
+	 */
+	override public function toString():String
+	{
+		return FlxStringUtil.getDebugString([
+			LabelValuePair.weak("x", x), 
+			LabelValuePair.weak("y", y), 
+			LabelValuePair.weak("w", width), 
+			LabelValuePair.weak("h", height), 
+			LabelValuePair.weak("visible", visible), 
+			LabelValuePair.weak("velocity", velocity)]);
+	}
+	
+		private function set_x(NewX:Float):Float
 	{
 		return x = NewX;
 	}
@@ -998,17 +1039,32 @@ class FlxObject extends FlxBasic
 		return immovable = Value;
 	}
 	
-	/**
-	 * Convert object to readable string name.  Useful for debugging, save games, etc.
-	 */
-	override public function toString():String
+	private function get_camera():FlxCamera
 	{
-		return FlxStringUtil.getDebugString([
-			LabelValuePair.weak("x", x), 
-			LabelValuePair.weak("y", y), 
-			LabelValuePair.weak("w", width), 
-			LabelValuePair.weak("h", height), 
-			LabelValuePair.weak("visible", visible), 
-			LabelValuePair.weak("velocity", velocity)]);
+		return (_cameras == null || _cameras.length == 0) ? FlxCamera.defaultCameras[0] : _cameras[0];
+	}
+	
+	private function set_camera(Value:FlxCamera):FlxCamera
+	{
+		if (_cameras == null)
+			_cameras = [Value];
+		else
+			_cameras[0] = Value;
+		return Value;
+	}
+	
+	private function get_cameras():Array<FlxCamera>
+	{
+		return (_cameras == null) ? FlxCamera.defaultCameras : _cameras;
+	}
+	
+	private function set_cameras(Value:Array<FlxCamera>):Array<FlxCamera>
+	{
+		return _cameras = Value;
+	}
+	
+	private function set_pixelPerfectRender(Value:Bool):Bool 
+	{
+		return pixelPerfectRender = Value;
 	}
 }
