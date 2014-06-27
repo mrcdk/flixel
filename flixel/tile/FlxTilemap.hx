@@ -13,6 +13,7 @@ import flixel.math.FlxPoint;
 import flixel.system.layer.DrawStackItem;
 import flixel.system.layer.frames.FlxSpriteFrames;
 import flixel.system.layer.Region;
+import flixel.tile.FlxBaseTilemap.TileGraphicInfo;
 import flixel.util.FlxArrayUtil;
 import flixel.util.FlxColor;
 import flixel.util.FlxDestroyUtil;
@@ -198,27 +199,29 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 		super.destroy();
 	}
 	
-	override private function cacheGraphics(TileWidth:Int, TileHeight:Int, TileGraphic:Dynamic):Void 
+	override private function cacheGraphics(tileGraphicInfo:TileGraphicInfo, TileGraphic:Dynamic):Void 
 	{
 		// Figure out the size of the tiles
 		cachedGraphics = FlxG.bitmap.add(TileGraphic);
-		_tileWidth = TileWidth;
+		_tileWidth = tileGraphicInfo.width;
 		
 		if (_tileWidth <= 0)
 		{
 			_tileWidth = cachedGraphics.bitmap.height;
 		}
 		
-		_tileHeight = TileHeight;
+		_tileHeight = tileGraphicInfo.height;
 		
 		if (_tileHeight <= 0)
 		{
 			_tileHeight = _tileWidth;
 		}
 		
+		setGridSize(_tileWidth, _tileHeight);
+		
 		if (!Std.is(TileGraphic, TextureRegion))
 		{
-			region = new Region(0, 0, _tileWidth, _tileHeight);
+			region = new Region(tileGraphicInfo.margin, tileGraphicInfo.margin, _tileWidth, _tileHeight, tileGraphicInfo.spacing, tileGraphicInfo.spacing);
 			region.width = Std.int(cachedGraphics.bitmap.width / _tileWidth) * _tileWidth;
 			region.height = Std.int(cachedGraphics.bitmap.height / _tileHeight) * _tileHeight;
 		}
@@ -226,6 +229,10 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 		{
 			var spriteRegion:TextureRegion = cast TileGraphic;
 			region = spriteRegion.region.clone();
+			region.startX = tileGraphicInfo.margin;
+			region.startY = tileGraphicInfo.margin;
+			region.spacingX = tileGraphicInfo.spacing;
+			region.spacingY = tileGraphicInfo.spacing;
 			if (region.tileWidth > 0)
 			{
 				_tileWidth = region.tileWidth;
@@ -269,8 +276,9 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 	
 	override private function computeDimensions():Void 
 	{
-		_scaledTileWidth = _tileWidth * scale.x;
-		_scaledTileHeight = _tileHeight * scale.y;
+		// TODO tileOffset?
+		_scaledTileWidth = gridWidth * scale.x;
+		_scaledTileHeight = gridHeight * scale.y;
 		
 		// Then go through and create the actual map
 		width = widthInTiles * _scaledTileWidth;
@@ -1006,8 +1014,8 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 				
 				if (tileID != -1)
 				{
-					drawX = _helperPoint.x + (columnIndex % widthInTiles) * _scaledTileWidth;
-					drawY = _helperPoint.y + Math.floor(columnIndex / widthInTiles) * _scaledTileHeight;
+					drawX = (_helperPoint.x + tileOffset.x) + (columnIndex % widthInTiles) * _scaledTileWidth;
+					drawY = (_helperPoint.y + tileOffset.y) + Math.floor(columnIndex / widthInTiles) * _scaledTileHeight;
 					
 					currDrawData[currIndex++] = isPixelPerfectRender(Camera) ? Math.floor(drawX) : drawX;
 					currDrawData[currIndex++] = isPixelPerfectRender(Camera) ? Math.floor(drawY) : drawY;
@@ -1111,7 +1119,7 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 	
 	private inline function createBuffer(camera:FlxCamera):FlxTilemapBuffer
 	{
-		var buffer = new FlxTilemapBuffer(_tileWidth, _tileHeight, widthInTiles, heightInTiles, camera, scale.x, scale.y);
+		var buffer = new FlxTilemapBuffer(Std.int(gridWidth), Std.int(gridHeight), widthInTiles, heightInTiles, camera, scale.x, scale.y);
 		buffer.pixelPerfectRender = pixelPerfectRender;
 		return buffer;
 	}
@@ -1186,7 +1194,7 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 	
 	private function setScaleXCallback(Scale:FlxPoint):Void
 	{
-		_scaledTileWidth = _tileWidth * scale.x;
+		_scaledTileWidth = gridWidth * scale.x;
 		width = widthInTiles * _scaledTileWidth;
 		
 		if (cameras != null)
@@ -1203,7 +1211,7 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 	
 	private function setScaleYCallback(Scale:FlxPoint):Void
 	{
-		_scaledTileHeight = _tileHeight * scale.y;
+		_scaledTileHeight = gridHeight * scale.y;
 		height = heightInTiles * _scaledTileHeight;
 		
 		if (cameras != null)
