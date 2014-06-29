@@ -27,10 +27,7 @@ class FlxBaseTilemap<Tile:FlxObject> extends FlxObject
 	 * Read-only variable, do NOT recommend changing after the map is loaded!
 	 */
 	public var totalTiles:Int = 0;
-	
-	public var gridWidth(default, set):Float = 0;
-	public var gridHeight(default, set):Float = 0;
-	public var tileOffset:FlxPoint;
+
 	/**
 	 * Set this to create your own image index remapper, so you can create your own tile layouts.
 	 * Mostly useful in combination with the auto-tilers.
@@ -145,7 +142,6 @@ class FlxBaseTilemap<Tile:FlxObject> extends FlxObject
 		flixelType = TILEMAP;
 		immovable = true;
 		moves = false;
-		tileOffset = FlxPoint.get();
 	}
 	
 	override public function destroy():Void 
@@ -196,12 +192,6 @@ class FlxBaseTilemap<Tile:FlxObject> extends FlxObject
 		updateMap();
 
 		return this;
-	}
-	
-	public function setGridSize(width:Float, height:Float)
-	{
-		gridWidth = width;
-		gridHeight = height;
 	}
 	
 	private function loadMapData(MapData:FlxTilemapAsset)
@@ -1176,20 +1166,6 @@ class FlxBaseTilemap<Tile:FlxObject> extends FlxObject
 		}
 		
 		return Bounds.set(x, y, width, height);
-	}
-	
-	private function set_gridWidth(Value:Float):Float
-	{
-		gridWidth = Value;
-		computeDimensions();
-		return gridWidth;
-	}
-	
-	private function set_gridHeight(Value:Float):Float
-	{
-		gridHeight = Value;
-		computeDimensions();
-		return gridHeight;
 	}
 }
 

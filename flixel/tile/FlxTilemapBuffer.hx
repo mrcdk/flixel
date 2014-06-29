@@ -68,14 +68,14 @@ class FlxTilemapBuffer
 	 * @param   HeightInTiles   How many tiles tall the tilemap is.
 	 * @param   Camera          Which camera this buffer relates to.
 	 */
-	public function new(TileWidth:Int, TileHeight:Int, WidthInTiles:Int, HeightInTiles:Int,
-		?Camera:FlxCamera,ScaleX:Float = 1.0, ScaleY:Float = 1.0)
+	public function new(GridWidth:Int, GridHeight:Int, WidthInTiles:Int, HeightInTiles:Int,
+		?Camera:FlxCamera, ScaleX:Float = 1.0, ScaleY:Float = 1.0)
 	{
-		updateColumns(TileWidth, WidthInTiles, ScaleX, Camera);
-		updateRows(TileHeight, HeightInTiles, ScaleY, Camera);
+		updateColumns(GridWidth, WidthInTiles, ScaleX, Camera);
+		updateRows(GridHeight, HeightInTiles, ScaleY, Camera);
 		
 		#if FLX_RENDER_BLIT
-		pixels = new BitmapData(Std.int(columns * TileWidth), Std.int(rows * TileHeight), true, 0);
+		pixels = new BitmapData(Std.int(columns * GridWidth), Std.int(rows * GridHeight), true, 0);
 		_flashRect = new Rectangle(0, 0, pixels.width, pixels.height);
 		_matrix = new Matrix();
 		#end
@@ -134,7 +134,7 @@ class FlxTilemapBuffer
 	}
 	#end
 	
-	public function updateColumns(TileWidth:Int, WidthInTiles:Int, ScaleX:Float = 1.0, ?Camera:FlxCamera):Void
+	public function updateColumns(GridWidth:Int, WidthInTiles:Int, ScaleX:Float = 1.0, ?Camera:FlxCamera):Void
 	{
 		if (WidthInTiles < 0) 
 		{
@@ -146,19 +146,19 @@ class FlxTilemapBuffer
 			Camera = FlxG.camera;
 		}
 
-		columns = Math.ceil(Camera.width / (TileWidth * ScaleX)) + 1;
+		columns = Math.ceil(Camera.width / (GridWidth * ScaleX)) + 1;
 		
 		if (columns > WidthInTiles)
 		{
 			columns = WidthInTiles;
 		}
 		
-		width = Std.int(columns * TileWidth * ScaleX);
+		width = Std.int(columns * GridWidth * ScaleX);
 		
 		dirty = true;
 	}
 	
-	public function updateRows(TileHeight:Int, HeightInTiles:Int, ScaleY:Float = 1.0, ?Camera:FlxCamera):Void
+	public function updateRows(GridHeight:Int, HeightInTiles:Int, ScaleY:Float = 1.0, ?Camera:FlxCamera):Void
 	{
 		if (HeightInTiles < 0) 
 		{
@@ -170,14 +170,14 @@ class FlxTilemapBuffer
 			Camera = FlxG.camera;
 		}
 		
-		rows = Math.ceil(Camera.height / (TileHeight * ScaleY)) + 1;
+		rows = Math.ceil(Camera.height / (GridHeight * ScaleY)) + 1;
 		
 		if (rows > HeightInTiles)
 		{
 			rows = HeightInTiles;
 		}
 		
-		height = Std.int(rows * TileHeight * ScaleY);	
+		height = Std.int(rows * GridHeight * ScaleY);	
 		
 		dirty = true;
 	}

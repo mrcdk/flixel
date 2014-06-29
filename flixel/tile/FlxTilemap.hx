@@ -58,6 +58,11 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 	public var framesData(default, null):FlxSpriteFrames;
 	public var cachedGraphics(default, set):CachedGraphics;
 	
+		
+	public var gridWidth(default, set):Int = 0;
+	public var gridHeight(default, set):Int = 0;
+	public var tileOffset(default, null):FlxPoint;
+	
 	/**
 	 * Rendering helper, minimize new object instantiation on repetitive methods.
 	 */
@@ -85,8 +90,25 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 	 */
 	private var _tileHeight:Int = 0;
 	
+	/**
+	 * Grid width scaled
+	 */
+	private var _scaledGridWidth:Float = 0;
+	/**
+	 * Grid height scaled
+	 */
+	private var _scaledGridHeight:Float = 0;
+	
+	/**
+	 * Tile width scaled
+	 */
 	private var _scaledTileWidth:Float = 0;
+	/**
+	 * Tile height scaled
+	 */
 	private var _scaledTileHeight:Float = 0;
+	
+	private var _scaledTileOffset:FlxPoint;
 	
 	#if (FLX_RENDER_BLIT && !FLX_NO_DEBUG)
 	/**
@@ -132,6 +154,9 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 		#if FLX_RENDER_TILE
 		_helperPoint = new Point();
 		#end
+		
+		tileOffset = new FlxCallbackPoint(setTileOffsetCallback, setTileOffsetCallback, setTileOffsetCallback);
+		_scaledTileOffset = FlxPoint.get();
 		
 		scale = new FlxCallbackPoint(setScaleXCallback, setScaleYCallback, setScaleXYCallback);
 		scale.set(1, 1);
@@ -193,6 +218,8 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 		
 		// need to destroy FlxCallbackPoints
 		scale = FlxDestroyUtil.destroy(scale);
+		tileOffset = FlxDestroyUtil.destroy(tileOffset);
+		_scaledTileOffset.put();
 		
 		FlxG.signals.gameResized.remove(onGameResize);
 		
@@ -276,14 +303,18 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 	
 	override private function computeDimensions():Void 
 	{
-		// TODO tileOffset?
-		_scaledTileWidth = gridWidth * scale.x;
-		_scaledTileHeight = gridHeight * scale.y;
+		_scaledGridWidth = gridWidth * scale.x;
+		_scaledGridHeight = gridHeight * scale.y;
+		
+		_scaledTileWidth = _tileWidth * scale.x;
+		_scaledTileHeight = _tileHeight * scale.y;
+		
+		_scaledTileOffset.x = tileOffset.x * scale.x;
+		_scaledTileOffset.y = tileOffset.y * scale.y;
 		
 		// Then go through and create the actual map
-		width = widthInTiles * _scaledTileWidth;
-		height = heightInTiles * _scaledTileHeight;
-		
+		width = widthInTiles * _scaledGridWidth;
+		height = heightInTiles * _scaledGridHeight;
 	}
 	
 	override private function updateMap():Void 
@@ -308,6 +339,7 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 	#if !FLX_NO_DEBUG
 	override public function drawDebugOnCamera(Camera:FlxCamera):Void
 	{
+		return;
 		#if FLX_RENDER_TILE
 		var buffer:FlxTilemapBuffer = null;
 		var l:Int = FlxG.cameras.list.length;
@@ -339,8 +371,8 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 		// Modified from getScreenXY()
 		_point.x = (Camera.scroll.x * scrollFactor.x) - x; 
 		_point.y = (Camera.scroll.y * scrollFactor.y) - y;
-		var screenXInTiles:Int = Math.floor(_point.x / _scaledTileWidth);
-		var screenYInTiles:Int = Math.floor(_point.y / _scaledTileHeight);
+		var screenXInTiles:Int = Math.floor(_point.x / _scaledGridWidth);
+		var screenYInTiles:Int = Math.floor(_point.y / _scaledGridHeight);
 		var screenRows:Int = buffer.rows;
 		var screenColumns:Int = buffer.columns;
 		
@@ -382,8 +414,8 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 				
 				if (tileID != -1)
 				{
-					drawX = _helperPoint.x + (columnIndex % widthInTiles) * _scaledTileWidth;
-					drawY = _helperPoint.y + Math.floor(columnIndex / widthInTiles) * _scaledTileHeight;
+					drawX = _helperPoint.x + (columnIndex % widthInTiles) * _scaledGridWidth;
+					drawY = _helperPoint.y + Math.floor(columnIndex / widthInTiles) * _scaledGridHeight;
 					
 					tile = _tileObjects[_data[columnIndex]];
 					
@@ -405,17 +437,17 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 						// Copied from makeDebugTile
 						var gfx:Graphics = Camera.debugLayer.graphics;
 						gfx.lineStyle(1, debugColor, 0.5);
-						gfx.drawRect(drawX, drawY, _scaledTileWidth, _scaledTileHeight);
+						gfx.drawRect(drawX, drawY, _scaledGridWidth, _scaledGridHeight);
 					}
 				}
 				
-				_flashPoint.x += _scaledTileWidth;
+				_flashPoint.x += _scaledGridWidth;
 				column++;
 				columnIndex++;
 			}
 			
 			rowIndex += widthInTiles;
-			_flashPoint.y += _scaledTileHeight;
+			_flashPoint.y += _scaledGridHeight;
 			row++;
 		}
 		#end
@@ -519,10 +551,10 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 		}
 		
 		// Figure out what tiles we need to check against
-		var selectionX:Int = Math.floor((Object.x - X) / _scaledTileWidth);
-		var selectionY:Int = Math.floor((Object.y - Y) / _scaledTileHeight);
-		var selectionWidth:Int = selectionX + Math.ceil(Object.width / _scaledTileWidth) + 1;
-		var selectionHeight:Int = selectionY + Math.ceil(Object.height / _scaledTileHeight) + 1;
+		var selectionX:Int = Math.floor((Object.x - X) / _scaledGridWidth);
+		var selectionY:Int = Math.floor((Object.y - Y) / _scaledGridHeight);
+		var selectionWidth:Int = selectionX + Math.ceil(Object.width / _scaledGridWidth) + 1;
+		var selectionHeight:Int = selectionY + Math.ceil(Object.height / _scaledGridHeight) + 1;
 		
 		// Then bound these coordinates by the map edges
 		selectionWidth = Std.int(FlxMath.bound(selectionWidth, 0, widthInTiles));
@@ -558,8 +590,8 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 				}
 				
 				tile = _tileObjects[dataIndex];
-				tile.width = _scaledTileWidth;
-				tile.height = _scaledTileHeight;
+				tile.width = _scaledGridWidth;
+				tile.height = _scaledGridHeight;
 				tile.x = X + column * tile.width;
 				tile.y = Y + row * tile.height;
 				tile.last.x = tile.x - deltaX;
@@ -609,20 +641,31 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 
 	override public function getTileIndexByCoords(Coord:FlxPoint):Int
 	{
-		var result = Std.int((Coord.y - y) / _scaledTileHeight) * widthInTiles + Std.int((Coord.x - x) / _scaledTileWidth);
+		var result = Std.int((Coord.y - y) / _scaledGridHeight) * widthInTiles + Std.int((Coord.x - x) / _scaledGridWidth);
 		Coord.putWeak();
 		return result;
 	}
 	
 	override public function getTileCoordsByIndex(Index:Int, Midpoint:Bool = true):FlxPoint
 	{
-		var point = FlxPoint.get(x + Std.int(Index % widthInTiles) * _scaledTileWidth, y + Std.int(Index / widthInTiles) * _scaledTileHeight);
+		var point = FlxPoint.get(x + Std.int(Index % widthInTiles) * _scaledGridWidth, y + Std.int(Index / widthInTiles) * _scaledGridHeight);
 		if (Midpoint)
 		{
-			point.x += _scaledTileWidth * 0.5;
-			point.y += _scaledTileHeight * 0.5;
+			point.x += _scaledGridWidth * 0.5;
+			point.y += _scaledGridHeight * 0.5;
 		}
 		return point;
+	}
+	
+	/**
+	 * Sets the grid size of this tilemap
+	 * @param	width
+	 * @param	height
+	 */	
+	public function setGridSize(width:Int, height:Int)
+	{
+		gridWidth = width;
+		gridHeight = height;
 	}
 	
 	/**
@@ -644,12 +687,12 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 		{
 			if (_data[i] == Index)
 			{
-				point = FlxPoint.get(x + Std.int(i % widthInTiles) * _scaledTileWidth, y + Std.int(i / widthInTiles) * _scaledTileHeight);
+				point = FlxPoint.get(x + Std.int(i % widthInTiles) * _scaledGridWidth, y + Std.int(i / widthInTiles) * _scaledGridHeight);
 				
 				if (Midpoint)
 				{
-					point.x += _scaledTileWidth * 0.5;
-					point.y += _scaledTileHeight * 0.5;
+					point.x += _scaledGridWidth * 0.5;
+					point.y += _scaledGridHeight * 0.5;
 				}
 				
 				if (array == null)
@@ -678,7 +721,7 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 			Camera = FlxG.camera;
 		}
 		
-		Camera.setScrollBoundsRect(x + Border * _scaledTileWidth, y + Border * _scaledTileHeight, width - Border * _scaledTileWidth * 2, height - Border * _scaledTileHeight * 2, UpdateWorld);
+		Camera.setScrollBoundsRect(x + Border * _scaledGridWidth, y + Border * _scaledGridHeight, width - Border * _scaledGridWidth * 2, height - Border * _scaledGridHeight * 2, UpdateWorld);
 	}
 	
 	/**
@@ -693,11 +736,11 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 	 */
 	override public function ray(Start:FlxPoint, End:FlxPoint, ?Result:FlxPoint, Resolution:Float = 1):Bool
 	{
-		var step:Float = _scaledTileWidth;
+		var step:Float = _scaledGridWidth;
 		
-		if (_scaledTileHeight < _scaledTileWidth)
+		if (_scaledGridHeight < _scaledGridWidth)
 		{
-			step = _scaledTileHeight;
+			step = _scaledGridHeight;
 		}
 		
 		step /= Resolution;
@@ -727,14 +770,14 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 				continue;
 			}
 			
-			tileX = Math.floor(curX / _scaledTileWidth);
-			tileY = Math.floor(curY / _scaledTileHeight);
+			tileX = Math.floor(curX / _scaledGridWidth);
+			tileY = Math.floor(curY / _scaledGridHeight);
 			
 			if (_tileObjects[_data[tileY * widthInTiles + tileX]].allowCollisions != FlxObject.NONE)
 			{
 				// Some basic helper stuff
-				tileX *= Std.int(_scaledTileWidth);
-				tileY *= Std.int(_scaledTileHeight);
+				tileX *= Std.int(_scaledGridWidth);
+				tileY *= Std.int(_scaledGridHeight);
 				var rx:Float = 0;
 				var ry:Float = 0;
 				var q:Float;
@@ -746,13 +789,13 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 				
 				if (deltaX < 0)
 				{
-					q += _scaledTileWidth;
+					q += _scaledGridWidth;
 				}
 				
 				rx = q;
 				ry = ly + stepY * ((q - lx) / stepX);
 				
-				if ((ry > tileY) && (ry < tileY + _scaledTileHeight))
+				if ((ry > tileY) && (ry < tileY + _scaledGridHeight))
 				{
 					if (Result == null)
 					{
@@ -768,13 +811,13 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 				
 				if (deltaY < 0)
 				{
-					q += _scaledTileHeight;
+					q += _scaledGridHeight;
 				}
 				
 				rx = lx + stepX * ((q - ly) / stepY);
 				ry = q;
 				
-				if ((rx > tileX) && (rx < tileX + _scaledTileWidth))
+				if ((rx > tileX) && (rx < tileX + _scaledGridWidth))
 				{
 					if (Result == null)
 					{
@@ -932,8 +975,8 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 		_point.x = (Camera.scroll.x * scrollFactor.x) - x; //modified from getScreenXY()
 		_point.y = (Camera.scroll.y * scrollFactor.y) - y;
 		
-		var screenXInTiles:Int = Math.floor(_point.x / _scaledTileWidth);
-		var screenYInTiles:Int = Math.floor(_point.y / _scaledTileHeight);
+		var screenXInTiles:Int = Math.floor(_point.x / _scaledGridWidth);
+		var screenYInTiles:Int = Math.floor(_point.y / _scaledGridHeight);
 		var screenRows:Int = Buffer.rows;
 		var screenColumns:Int = Buffer.columns;
 		
@@ -956,7 +999,7 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 		}
 		
 		var rowIndex:Int = screenYInTiles * widthInTiles + screenXInTiles;
-		_flashPoint.y = 0;
+		_flashPoint.y = 0 + tileOffset.y;
 		var row:Int = 0;
 		var column:Int;
 		var columnIndex:Int;
@@ -970,7 +1013,7 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 		{
 			columnIndex = rowIndex;
 			column = 0;
-			_flashPoint.x = 0;
+			_flashPoint.x = 0 + tileOffset.x;
 			
 			while (column < screenColumns)
 			{
@@ -1014,8 +1057,8 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 				
 				if (tileID != -1)
 				{
-					drawX = (_helperPoint.x + tileOffset.x) + (columnIndex % widthInTiles) * _scaledTileWidth;
-					drawY = (_helperPoint.y + tileOffset.y) + Math.floor(columnIndex / widthInTiles) * _scaledTileHeight;
+					drawX = (_helperPoint.x + _scaledTileOffset.x) + (columnIndex % widthInTiles) * _scaledGridWidth;
+					drawY = (_helperPoint.y + _scaledTileOffset.y) + Math.floor(columnIndex / widthInTiles) * _scaledGridHeight;
 					
 					currDrawData[currIndex++] = isPixelPerfectRender(Camera) ? Math.floor(drawX) : drawX;
 					currDrawData[currIndex++] = isPixelPerfectRender(Camera) ? Math.floor(drawY) : drawY;
@@ -1034,14 +1077,14 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 				#end
 				
 				#if FLX_RENDER_BLIT
-				_flashPoint.x += _tileWidth;
+				_flashPoint.x += gridWidth;
 				#end
 				column++;
 				columnIndex++;
 			}
 			
 			#if FLX_RENDER_BLIT
-			_flashPoint.y += _tileHeight;
+			_flashPoint.y += gridHeight;
 			#end
 			rowIndex += widthInTiles;
 			row++;
@@ -1051,8 +1094,8 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 		drawItem.position = currIndex;
 		#end
 		
-		Buffer.x = screenXInTiles * _scaledTileWidth;
-		Buffer.y = screenYInTiles * _scaledTileHeight;
+		Buffer.x = screenXInTiles * _scaledGridWidth;
+		Buffer.y = screenYInTiles * _scaledGridHeight;
 		
 		Buffer.dirty = false;
 	}
@@ -1065,15 +1108,15 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 	private function makeDebugTile(Color:FlxColor):BitmapData
 	{
 		var debugTile:BitmapData;
-		debugTile = new BitmapData(_tileWidth, _tileHeight, true, 0);
+		debugTile = new BitmapData(gridWidth, gridHeight, true, 0);
 
 		var gfx:Graphics = FlxSpriteUtil.flashGfx;
 		gfx.clear();
 		gfx.moveTo(0, 0);
 		gfx.lineStyle(1, Color, 0.5);
-		gfx.lineTo(_tileWidth - 1, 0);
-		gfx.lineTo(_tileWidth - 1, _tileHeight - 1);
-		gfx.lineTo(0, _tileHeight - 1);
+		gfx.lineTo(gridWidth - 1, 0);
+		gfx.lineTo(gridWidth - 1, gridHeight - 1);
+		gfx.lineTo(0, gridHeight - 1);
 		gfx.lineTo(0, 0);
 		
 		debugTile.draw(FlxSpriteUtil.flashGfxSprite);
@@ -1119,7 +1162,7 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 	
 	private inline function createBuffer(camera:FlxCamera):FlxTilemapBuffer
 	{
-		var buffer = new FlxTilemapBuffer(Std.int(gridWidth), Std.int(gridHeight), widthInTiles, heightInTiles, camera, scale.x, scale.y);
+		var buffer = new FlxTilemapBuffer(gridWidth, gridHeight, widthInTiles, heightInTiles, camera, scale.x, scale.y);
 		buffer.pixelPerfectRender = pixelPerfectRender;
 		return buffer;
 	}
@@ -1135,8 +1178,8 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 			var buffer = _buffers[i];
 			
 			// Calculate the required number of columns and rows
-			_helperBuffer.updateColumns(_tileWidth, widthInTiles, scale.x, camera);
-			_helperBuffer.updateRows(_tileHeight, heightInTiles, scale.y, camera);
+			_helperBuffer.updateColumns(gridWidth, widthInTiles, scale.x, camera);
+			_helperBuffer.updateRows(gridHeight, heightInTiles, scale.y, camera);
 			
 			// Create a new buffer if the number of columns and rows differs
 			if (buffer == null || _helperBuffer.columns != buffer.columns || _helperBuffer.rows != buffer.rows)
@@ -1186,6 +1229,20 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 		return pixelPerfectRender = Value;
 	}
 	
+	private function set_gridWidth(Value:Int):Int
+	{
+		gridWidth = Value;
+		computeDimensions();
+		return gridWidth;
+	}
+	
+	private function set_gridHeight(Value:Int):Int
+	{
+		gridHeight = Value;
+		computeDimensions();
+		return gridHeight;
+	}
+	
 	private function setScaleXYCallback(Scale:FlxPoint):Void
 	{
 		setScaleXCallback(Scale);
@@ -1194,8 +1251,7 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 	
 	private function setScaleXCallback(Scale:FlxPoint):Void
 	{
-		_scaledTileWidth = gridWidth * scale.x;
-		width = widthInTiles * _scaledTileWidth;
+		computeDimensions();
 		
 		if (cameras != null)
 		{
@@ -1203,7 +1259,7 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 			{
 				if (_buffers[i] != null)
 				{
-					_buffers[i].updateColumns(_tileWidth, widthInTiles, scale.x, cameras[i]);
+					_buffers[i].updateColumns(gridWidth, widthInTiles, scale.x, cameras[i]);
 				}
 			}
 		}
@@ -1211,8 +1267,7 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 	
 	private function setScaleYCallback(Scale:FlxPoint):Void
 	{
-		_scaledTileHeight = gridHeight * scale.y;
-		height = heightInTiles * _scaledTileHeight;
+		computeDimensions();
 		
 		if (cameras != null)
 		{
@@ -1220,9 +1275,14 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 			{
 				if (_buffers[i] != null)
 				{
-					_buffers[i].updateRows(_tileHeight, heightInTiles, scale.y, cameras[i]);
+					_buffers[i].updateRows(gridHeight, heightInTiles, scale.y, cameras[i]);
 				}
 			}
 		}
+	}
+	
+	private function setTileOffsetCallback(_) 
+	{
+		computeDimensions();
 	}
 }
