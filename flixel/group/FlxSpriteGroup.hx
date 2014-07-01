@@ -6,12 +6,14 @@ import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
+import flixel.math.FlxAngle;
 import flixel.math.FlxPoint;
 import flixel.system.FlxAssets.FlxGraphicAsset;
 import flixel.system.FlxAssets.FlxTextureAsset;
 import flixel.system.layer.frames.FlxFrame;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxSort;
+import openfl.geom.Matrix;
 
 typedef FlxSpriteGroup = FlxTypedSpriteGroup<FlxSprite>;
 
@@ -81,6 +83,9 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	override private function initVars():Void 
 	{
 		flixelType = SPRITEGROUP;
+		
+		_matrix = new Matrix();
+		_point = FlxPoint.get();
 		
 		offset = new FlxCallbackPoint(offsetCallback);
 		origin = new FlxCallbackPoint(originCallback);
@@ -214,7 +219,15 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	
 	override public function draw():Void 
 	{
-		group.draw();
+		for (camera in cameras) {
+			if (!camera.visible || !camera.exists || !isOnScreen(camera))
+			{
+				continue;
+			}
+			
+			computeLocalMatrix(camera);
+			group.draw();
+		}
 		#if !FLX_NO_DEBUG
 		_isDrawnDebug = false;
 		#end
@@ -261,11 +274,12 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	public function add(Sprite:T):T
 	{
 		var sprite:FlxSprite = cast Sprite;
-		sprite.x += x;
-		sprite.y += y;
+		//sprite.x += x;
+		//sprite.y += y;
 		sprite.alpha *= alpha;
-		sprite.scrollFactor.copyFrom(scrollFactor);
+		//sprite.scrollFactor.copyFrom(scrollFactor);
 		sprite.cameras = _cameras; // _cameras instead of cameras because get_cameras() will not return null
+		sprite._parentMatrix = _matrix;
 		return group.add(Sprite);
 	}
 	
@@ -552,6 +566,7 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	@:generic
 	public function transformChildren<V>(Function:T->V->Void, Value:V):Void
 	{
+		return;
 		if (group == null) 
 		{
 			return;

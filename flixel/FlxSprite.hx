@@ -169,6 +169,7 @@ class FlxSprite extends FlxObject
 	 * Internal, helps with animation, caching and drawing.
 	 */
 	private var _matrix:Matrix;
+	private var _parentMatrix:Matrix;
 	/**
 	 * These vars are being used for rendering in some of FlxSprite subclasses (FlxTileblock, FlxBar, 
 	 * FlxBitmapFont and FlxBitmapTextField) and for checks if the sprite is in camera's view.
@@ -745,20 +746,6 @@ class FlxSprite extends FlxObject
 		var drawItem:DrawStackItem;
 		var currDrawData:Array<Float>;
 		var currIndex:Int;
-		
-		var cos:Float;
-		var sin:Float;
-		
-		var ox:Float = origin.x;
-		if (_facingHorizontalMult != 1)
-		{
-			ox = frameWidth - ox;
-		}
-		var oy:Float = origin.y;
-		if (_facingVerticalMult != 1)
-		{
-			oy = frameHeight - oy;
-		}
 	#end
 		
 		for (camera in cameras)
@@ -784,114 +771,39 @@ class FlxSprite extends FlxObject
 		#end
 			
 #if FLX_RENDER_BLIT
-			if (isSimpleRender(camera))
+			if (isSimpleRender(camera) && _parentMatrix == null)
 			{
 				_point.floor().copyToFlash(_flashPoint);
 				camera.buffer.copyPixels(framePixels, _flashRect, _flashPoint, null, null, true);
 			}
 			else
 			{
-				_matrix.identity();
-				_matrix.translate(-origin.x, -origin.y);
-				_matrix.scale(scale.x, scale.y);
+				computeLocalMatrix(camera);
 				
-				if ((angle != 0) && (bakedRotationAngle <= 0))
-				{
-					_matrix.rotate(angle * FlxAngle.TO_RAD);
-				}
-				
-				_point.addPoint(origin).floor();
-				
-				_matrix.translate(_point.x, _point.y);
 				camera.buffer.draw(framePixels, _matrix, null, blend, null, (antialiasing || camera.antialiasing));
 			}
 #else
-			var csx:Float = _facingHorizontalMult;
-			var csy:Float = _facingVerticalMult;
-			var ssy:Float = 0;
-			var ssx:Float = 0;
-			
-			var x1:Float = (ox - frame.center.x);
-			var y1:Float = (oy - frame.center.y);
-			
-			var x2:Float = x1;
-			var y2:Float = y1;
-			
-			// transformation matrix coefficients
-			var a:Float = csx;
-			var b:Float = ssx;
-			var c:Float = ssy;
-			var d:Float = csy;
-			
-			if (!isSimpleRender(camera))
+			if (isSimpleRender(camera) && _parentMatrix == null) 
 			{
-				if (_angleChanged && (bakedRotationAngle <= 0))
-				{
-					var radians:Float = -angle * FlxAngle.TO_RAD;
-					_sinAngle = Math.sin(radians);
-					_cosAngle = Math.cos(radians);
-					_angleChanged = false;
-				}
-				
-				var sx:Float = scale.x * _facingHorizontalMult;
-				var sy:Float = scale.y * _facingVerticalMult;
-				
-				// todo: handle different additional angles (since different packers adds different values, e.g. -90 or +90)
-				if (frame.type == ROTATED)
-				{
-					cos = -_sinAngle;
-					sin = _cosAngle;
-					
-					csx = cos * sx;
-					ssy = sin * sy;
-					ssx = sin * sx;
-					csy = cos * sy;
-					
-					x2 = x1 * ssx - y1 * csy;
-					y2 = x1 * csx + y1 * ssy;
-					
-					a = csy;
-					b = ssy;
-					c = ssx;
-					d = csx;
-				}
-				else
-				{
-					cos = _cosAngle;
-					sin = _sinAngle;
-					
-					csx = cos * sx;
-					ssy = sin * sy;
-					ssx = sin * sx;
-					csy = cos * sy;
-					
-					x2 = x1 * csx + y1 * ssy;
-					y2 = -x1 * ssx + y1 * csy;
-					
-					a = csx;
-					b = ssx;
-					c = ssy;
-					d = csy;
-				}
+				//_matrix.setTo(_facingHorizontalMult, 0, 0, _facingVerticalMult, 0, 0);
+				_matrix.identity();
+				_matrix.tx = _point.x;
+				_matrix.ty = _point.y;
 			}
 			else
 			{
-				x2 = x1 * csx;
-				y2 = y1 * csy;
+				computeLocalMatrix(camera);
 			}
 			
-			_point.x -= x2;
-			_point.y -= y2;
-			
-			currDrawData[currIndex++] = _point.x;
-			currDrawData[currIndex++] = _point.y;
+			currDrawData[currIndex++] = _matrix.tx;
+			currDrawData[currIndex++] = _matrix.ty;
 			
 			currDrawData[currIndex++] = frame.tileID;
 			
-			currDrawData[currIndex++] = a;
-			currDrawData[currIndex++] = -b;
-			currDrawData[currIndex++] = c;
-			currDrawData[currIndex++] = d;
+			currDrawData[currIndex++] = _matrix.a;
+			currDrawData[currIndex++] = _matrix.b;
+			currDrawData[currIndex++] = _matrix.c;
+			currDrawData[currIndex++] = _matrix.d;
 			
 			if (isColored)
 			{
@@ -911,6 +823,44 @@ class FlxSprite extends FlxObject
 		if (FlxG.debugger.drawDebug)
 			drawDebug();
 		#end
+	}
+	
+	private inline function computeLocalMatrix(camera:FlxCamera):Void
+	{
+		var tmpAngle = angle;
+		
+		getScreenPosition(_point, camera).subtractPoint(offset);
+		
+		_matrix.identity();
+		
+		#if(FLX_RENDER_TILE)
+		if (_parentMatrix == null || flixelType == SPRITEGROUP) 
+		#end
+		{
+			_matrix.translate( -origin.x, -origin.y);
+		}
+		#if(FLX_RENDER_TILE)
+		else 
+		{
+			_matrix.translate(origin.x - frame.center.x, origin.y - frame.center.y);
+			tmpAngle -= 180;
+		}
+		#end
+		_matrix.scale(scale.x, scale.y);
+		
+		if ((angle != 0) && (bakedRotationAngle <= 0))
+		{
+			_matrix.rotate(tmpAngle * FlxAngle.TO_RAD);
+		}
+		
+		_point.addPoint(origin).floor();
+		
+		_matrix.translate(_point.x, _point.y);
+		
+		if (_parentMatrix != null) 
+		{
+			_matrix.concat(_parentMatrix);
+		} 
 	}
 	
 	/**
