@@ -848,12 +848,17 @@ class FlxSprite extends FlxObject
 		#end
 		_matrix.scale(scale.x, scale.y);
 		
-		if ((angle != 0) && (bakedRotationAngle <= 0))
+		if ((tmpAngle != 0) && (bakedRotationAngle <= 0))
 		{
 			_matrix.rotate(tmpAngle * FlxAngle.TO_RAD);
 		}
 		
-		_point.addPoint(origin).floor();
+		_point.addPoint(origin);
+		
+		if (isPixelPerfectRender(camera))
+		{
+			_point.floor();
+		}
 		
 		_matrix.translate(_point.x, _point.y);
 		
