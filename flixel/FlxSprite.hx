@@ -785,8 +785,7 @@ class FlxSprite extends FlxObject
 #else
 			if (isSimpleRender(camera) && _parentMatrix == null) 
 			{
-				//_matrix.setTo(_facingHorizontalMult, 0, 0, _facingVerticalMult, 0, 0);
-				_matrix.identity();
+				_matrix.setTo(_facingHorizontalMult, 0, 0, _facingVerticalMult, 0, 0);
 				_point.floor();
 				_matrix.tx = _point.x;
 				_matrix.ty = _point.y;
@@ -834,16 +833,17 @@ class FlxSprite extends FlxObject
 		_matrix.identity();
 		_matrix.translate( -origin.x, -origin.y);
 		#else
-		_matrix.setTo(_facingHorizontalMult, 0, 0, _facingVerticalMult, 0, 0);
-		
-		if (_parentMatrix == null || flixelType == SPRITEGROUP) 
+		var ox = origin.x;
+		var oy = origin.y;
+		if (flixelType == SPRITEGROUP) 
 		{
-			_matrix.translate(-origin.x, -origin.y);
+			//TODO Support flipped groups maybe?
+			_matrix.identity();
+			_matrix.translate(-ox, -oy);
 		}
 		else
 		{
-			var ox = origin.x;
-			var oy = origin.y;
+			_matrix.setTo(_facingHorizontalMult, 0, 0, _facingVerticalMult, 0, 0);
 			if (_facingHorizontalMult != 1)
 			{
 				ox = frameWidth - ox;
@@ -852,16 +852,20 @@ class FlxSprite extends FlxObject
 			{
 				oy = frameHeight - oy;
 			}
+			if (frame != null) 
+			{
+				ox -= frame.center.x;
+				oy -= frame.center.y;
+			}
 			
-			_matrix.translate(ox - frame.center.x, oy - frame.center.y);
+			_matrix.translate(ox, oy);
 			
-			if (frame.type != ROTATED)
+			if (frame != null && frame.type != ROTATED)
 			{
 				_matrix.invert();
 			}
 		}
 		#end
-
 
 		_matrix.scale(scale.x, scale.y);
 		
