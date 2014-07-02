@@ -787,6 +787,7 @@ class FlxSprite extends FlxObject
 			{
 				//_matrix.setTo(_facingHorizontalMult, 0, 0, _facingVerticalMult, 0, 0);
 				_matrix.identity();
+				_point.floor();
 				_matrix.tx = _point.x;
 				_matrix.ty = _point.y;
 			}
@@ -827,30 +828,46 @@ class FlxSprite extends FlxObject
 	
 	private inline function computeLocalMatrix(camera:FlxCamera):Void
 	{
-		var tmpAngle = angle;
-		
 		getScreenPosition(_point, camera).subtractPoint(offset);
 		
+		#if(FLX_RENDER_BLIT)
 		_matrix.identity();
+		_matrix.translate( -origin.x, -origin.y);
+		#else
+		_matrix.setTo(_facingHorizontalMult, 0, 0, _facingVerticalMult, 0, 0);
 		
-		#if(FLX_RENDER_TILE)
 		if (_parentMatrix == null || flixelType == SPRITEGROUP) 
-		#end
 		{
-			_matrix.translate( -origin.x, -origin.y);
+			_matrix.translate(-origin.x, -origin.y);
 		}
-		#if(FLX_RENDER_TILE)
-		else 
+		else
 		{
-			_matrix.translate(origin.x - frame.center.x, origin.y - frame.center.y);
-			tmpAngle -= 180;
+			var ox = origin.x;
+			var oy = origin.y;
+			if (_facingHorizontalMult != 1)
+			{
+				ox = frameWidth - ox;
+			}
+			if (_facingVerticalMult != 1)
+			{
+				oy = frameHeight - oy;
+			}
+			
+			_matrix.translate(ox - frame.center.x, oy - frame.center.y);
+			
+			if (frame.type != ROTATED)
+			{
+				_matrix.invert();
+			}
 		}
 		#end
+
+
 		_matrix.scale(scale.x, scale.y);
 		
-		if ((tmpAngle != 0) && (bakedRotationAngle <= 0))
+		if ((angle != 0) && (bakedRotationAngle <= 0))
 		{
-			_matrix.rotate(tmpAngle * FlxAngle.TO_RAD);
+			_matrix.rotate(angle * FlxAngle.TO_RAD);
 		}
 		
 		_point.addPoint(origin);
