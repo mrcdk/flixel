@@ -87,14 +87,17 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 		_matrix = new Matrix();
 		_point = FlxPoint.get();
 		
-		offset = new FlxCallbackPoint(offsetCallback);
-		origin = new FlxCallbackPoint(originCallback);
-		scale = new FlxCallbackPoint(scaleCallback);
+		offset = FlxPoint.get();
+		origin = FlxPoint.get();
+		scale = FlxPoint.get();
+		//offset = new FlxCallbackPoint(offsetCallback);
+		//origin = new FlxCallbackPoint(originCallback);
+		//scale = new FlxCallbackPoint(scaleCallback);
 		scrollFactor = new FlxCallbackPoint(scrollFactorCallback);
 		
 		scale.set(1, 1);
 		scrollFactor.set(1, 1);
-	 	
+		
 		initMotionVars();
 	}
 	
@@ -546,15 +549,15 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	override public function setPosition(X:Float = 0, Y:Float = 0):Void
 	{
 		// Transform children by the movement delta
-		var dx:Float = X - x;
-		var dy:Float = Y - y;
-		multiTransformChildren([xTransform, yTransform], [dx, dy]);
+		//var dx:Float = X - x;
+		//var dy:Float = Y - y;
+		//multiTransformChildren([xTransform, yTransform], [dx, dy]);
 		
 		// don't transform children twice
-		_skipTransformChildren = true;
+		//_skipTransformChildren = true;
 		x = X; // this calls set_x
 		y = Y; // this calls set_y
-		_skipTransformChildren = false;
+		//_skipTransformChildren = false;
 	}
 	
 	/**
@@ -566,7 +569,6 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	@:generic
 	public function transformChildren<V>(Function:T->V->Void, Value:V):Void
 	{
-		return;
 		if (group == null) 
 		{
 			return;
@@ -654,33 +656,31 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	
 	override private function set_x(Value:Float):Float
 	{
-		if (!_skipTransformChildren && exists && x != Value)
+		/*if (!_skipTransformChildren && exists && x != Value)
 		{
 			var offset:Float = Value - x;
 			transformChildren(xTransform, offset);
-		}
-		
+		}*/
 		return x = Value;
 	}
 	
 	override private function set_y(Value:Float):Float
 	{
-		if (!_skipTransformChildren && exists && y != Value)
+		/*if (!_skipTransformChildren && exists && y != Value)
 		{
 			var offset:Float = Value - y;
 			transformChildren(yTransform, offset);
-		}
-		
+		}*/
 		return y = Value;
 	}
 	
 	override private function set_angle(Value:Float):Float
 	{
-		if (exists && angle != Value)
+		/*if (exists && angle != Value)
 		{
 			var offset:Float = Value - angle;
 			transformChildren(angleTransform, offset);
-		}
+		}*/
 		return angle = Value;
 	}
 	
@@ -705,36 +705,36 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	
 	override private function set_facing(Value:Int):Int
 	{
-		if (exists && facing != Value)
-			transformChildren(facingTransform, Value);
+		/*if (exists && facing != Value)
+			transformChildren(facingTransform, Value);*/
 		return facing = Value;
 	}
 	
 	override private function set_flipX(Value:Bool):Bool
 	{
-		if (exists && flipX != Value)
-			transformChildren(flipXTransform, Value);
+		/*if (exists && flipX != Value)
+			transformChildren(flipXTransform, Value);*/
 		return flipX = Value;
 	}
 	
 	override private function set_flipY(Value:Bool):Bool
 	{
-		if (exists && flipY != Value)
-			transformChildren(flipYTransform, Value);
+		/*if (exists && flipY != Value)
+			transformChildren(flipYTransform, Value);*/
 		return flipY = Value;
 	}
 	
 	override private function set_moves(Value:Bool):Bool
 	{
-		if (exists && moves != Value)
-			transformChildren(movesTransform, Value);
+		/*if (exists && moves != Value)
+			transformChildren(movesTransform, Value);*/
 		return moves = Value;
 	}
 	
 	override private function set_immovable(Value:Bool):Bool
 	{
-		if (exists && immovable != Value)
-			transformChildren(immovableTransform, Value);
+		/*if (exists && immovable != Value)
+			transformChildren(immovableTransform, Value);*/
 		return immovable = Value;
 	}
 	
@@ -860,18 +860,18 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	
 	// TRANSFORM FUNCTIONS - STATIC TYPING
 	
-	private inline function xTransform(Sprite:FlxSprite, X:Float)								{ Sprite.x += X; }								// addition
-	private inline function yTransform(Sprite:FlxSprite, Y:Float)								{ Sprite.y += Y; }								// addition
-	private inline function angleTransform(Sprite:FlxSprite, Angle:Float)						{ Sprite.angle += Angle; }						// addition
+	//private inline function xTransform(Sprite:FlxSprite, X:Float)								{ Sprite.x += X; }								// addition
+	//private inline function yTransform(Sprite:FlxSprite, Y:Float)								{ Sprite.y += Y; }								// addition
+	//private inline function angleTransform(Sprite:FlxSprite, Angle:Float)						{ Sprite.angle += Angle; }						// addition
 	private inline function alphaTransform(Sprite:FlxSprite, Alpha:Float)						{ Sprite.alpha *= Alpha; }						// multiplication
-	private inline function facingTransform(Sprite:FlxSprite, Facing:Int)						{ Sprite.facing = Facing; }						// set
-	private inline function flipXTransform(Sprite:FlxSprite, FlipX:Bool)						{ Sprite.flipX = FlipX; }						// set
-	private inline function flipYTransform(Sprite:FlxSprite, FlipY:Bool)						{ Sprite.flipY = FlipY; }						// set
-	private inline function movesTransform(Sprite:FlxSprite, Moves:Bool)						{ Sprite.moves = Moves; }						// set
+	//private inline function facingTransform(Sprite:FlxSprite, Facing:Int)						{ Sprite.facing = Facing; }						// set
+	//private inline function flipXTransform(Sprite:FlxSprite, FlipX:Bool)						{ Sprite.flipX = FlipX; }						// set
+	//private inline function flipYTransform(Sprite:FlxSprite, FlipY:Bool)						{ Sprite.flipY = FlipY; }						// set
+	//private inline function movesTransform(Sprite:FlxSprite, Moves:Bool)						{ Sprite.moves = Moves; }						// set
 	private inline function pixelPerfectTransform(Sprite:FlxSprite, PixelPerfect:Bool)			{ Sprite.pixelPerfectRender = PixelPerfect; }	// set
 	private inline function gColorTransform(Sprite:FlxSprite, Color:Int)						{ Sprite.color = Color; }						// set
 	private inline function blendTransform(Sprite:FlxSprite, Blend:BlendMode)					{ Sprite.blend = Blend; }						// set
-	private inline function immovableTransform(Sprite:FlxSprite, Immovable:Bool)				{ Sprite.immovable = Immovable; }				// set
+	//private inline function immovableTransform(Sprite:FlxSprite, Immovable:Bool)				{ Sprite.immovable = Immovable; }				// set
 	private inline function visibleTransform(Sprite:FlxSprite, Visible:Bool)					{ Sprite.visible = Visible; }					// set
 	private inline function activeTransform(Sprite:FlxSprite, Active:Bool)						{ Sprite.active = Active; }						// set
 	private inline function solidTransform(Sprite:FlxSprite, Solid:Bool)						{ Sprite.solid = Solid; }						// set
@@ -879,15 +879,15 @@ class FlxTypedSpriteGroup<T:FlxSprite> extends FlxSprite
 	private inline function existsTransform(Sprite:FlxSprite, Exists:Bool)						{ Sprite.exists = Exists; }						// set
 	private inline function camerasTransform(Sprite:FlxSprite, Cameras:Array<FlxCamera>)		{ Sprite.cameras = Cameras; }						// set
 
-	private inline function offsetTransform(Sprite:FlxSprite, Offset:FlxPoint)					{ Sprite.offset.copyFrom(Offset); }				// set
-	private inline function originTransform(Sprite:FlxSprite, Origin:FlxPoint)					{ Sprite.origin.copyFrom(Origin); }				// set
-	private inline function scaleTransform(Sprite:FlxSprite, Scale:FlxPoint)					{ Sprite.scale.copyFrom(Scale); }				// set
+	//private inline function offsetTransform(Sprite:FlxSprite, Offset:FlxPoint)					{ Sprite.offset.copyFrom(Offset); }				// set
+	//private inline function originTransform(Sprite:FlxSprite, Origin:FlxPoint)					{ Sprite.origin.copyFrom(Origin); }				// set
+	//private inline function scaleTransform(Sprite:FlxSprite, Scale:FlxPoint)					{ Sprite.scale.copyFrom(Scale); }				// set
 	private inline function scrollFactorTransform(Sprite:FlxSprite, ScrollFactor:FlxPoint)		{ Sprite.scrollFactor.copyFrom(ScrollFactor); }	// set
 
 	// Functions for the FlxCallbackPoint
-	private inline function offsetCallback(Offset:FlxPoint)             { transformChildren(offsetTransform, Offset); }
-	private inline function originCallback(Origin:FlxPoint)             { transformChildren(originTransform, Origin); }
-	private inline function scaleCallback(Scale:FlxPoint)               { transformChildren(scaleTransform, Scale); }
+	//private inline function offsetCallback(Offset:FlxPoint)             { transformChildren(offsetTransform, Offset); }
+	//private inline function originCallback(Origin:FlxPoint)             { transformChildren(originTransform, Origin); }
+	//private inline function scaleCallback(Scale:FlxPoint)               { transformChildren(scaleTransform, Scale); }
 	private inline function scrollFactorCallback(ScrollFactor:FlxPoint) { transformChildren(scrollFactorTransform, ScrollFactor); }
 	
 	// NON-SUPPORTED FUNCTIONALITY
