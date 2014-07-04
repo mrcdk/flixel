@@ -85,7 +85,7 @@ class FlxBaseTilemap<Tile:FlxObject> extends FlxObject
 		throw "updateTile must be implemented";
 	}
 	
-	private function cacheGraphics(TileWidth:Int, TileHeight:Int, TileGraphic:Dynamic):Void
+	private function cacheGraphics(tileset:FlxTileset):Void
 	{
 		throw "cacheGraphics must be implemented";
 	}
@@ -154,9 +154,7 @@ class FlxBaseTilemap<Tile:FlxObject> extends FlxObject
 	 * 
 	 * @param   MapData         A string of comma and line-return delineated indices indicating what order the tiles should go in,
 	 *                          or an Array<Int>. In the latter case YOU MUST SET widthInTiles and heightInTyles manually BEFORE CALLING loadMap()!
-	 * @param   TileGraphic     All the tiles you want to use, arranged in a strip corresponding to the numbers in MapData.
-	 * @param   TileWidth       The width of your tiles (e.g. 8) - defaults to height of the tile graphic if unspecified.
-	 * @param   TileHeight      The height of your tiles (e.g. 8) - defaults to width if unspecified.
+	 * @param   Tileset			The FlxTileset object.
 	 * @param   AutoTile        Whether to load the map using an automatic tile placement algorithm (requires 16 tiles!).
 	 *                          Setting this to either AUTO or ALT will override any values you put for StartingIndex, DrawIndex, or CollideIndex.
 	 * @param   StartingIndex   Used to sort of insert empty tiles in front of the provided graphic.
@@ -168,8 +166,8 @@ class FlxBaseTilemap<Tile:FlxObject> extends FlxObject
 	 *                          Can override and customize per-tile-type collision behavior using setTileProperties().
 	 * @return  A reference to this instance of FlxTilemap, for chaining as usual :)
 	 */
-	public function loadMap(MapData:FlxTilemapAsset, TileGraphic:FlxGraphicAsset, TileWidth:Int = 0, TileHeight:Int = 0, 
-		?AutoTile:FlxTilemapAutoTiling, StartingIndex:Int = 0, DrawIndex:Int = 1, CollideIndex:Int = 1):FlxBaseTilemap<Tile>
+	public function loadMap(MapData:FlxTilemapAsset, Tileset:FlxTileset, ?AutoTile:FlxTilemapAutoTiling,
+		StartingIndex:Int = 0, DrawIndex:Int = 1, CollideIndex:Int = 1):FlxBaseTilemap<Tile>
 	{
 		auto = (AutoTile == null) ? OFF : AutoTile;
 		_startingIndex = (StartingIndex <= 0) ? 0 : StartingIndex;
@@ -185,7 +183,7 @@ class FlxBaseTilemap<Tile:FlxObject> extends FlxObject
 		applyAutoTile(DrawIndex, CollideIndex);
 		applyCustomRemap();
 		randomizeIndices();
-		cacheGraphics(TileWidth, TileHeight, TileGraphic);
+		cacheGraphics(Tileset);
 		initTileObjects(DrawIndex, CollideIndex);
 		computeDimensions();
 		updateMap();

@@ -198,33 +198,35 @@ class FlxTilemap extends FlxBaseTilemap<FlxTile>
 		super.destroy();
 	}
 	
-	override private function cacheGraphics(TileWidth:Int, TileHeight:Int, TileGraphic:Dynamic):Void 
-	{
+	override private function cacheGraphics(tileset:FlxTileset):Void 
+	{	
 		// Figure out the size of the tiles
-		cachedGraphics = FlxG.bitmap.add(TileGraphic);
-		_tileWidth = TileWidth;
+		cachedGraphics = FlxG.bitmap.add(tileset.graphic);
+		_tileWidth = tileset.tileWidth;
 		
 		if (_tileWidth <= 0)
 		{
 			_tileWidth = cachedGraphics.bitmap.height;
 		}
 		
-		_tileHeight = TileHeight;
+		_tileHeight = tileset.tileHeight;
 		
 		if (_tileHeight <= 0)
 		{
 			_tileHeight = _tileWidth;
 		}
 		
-		if (!Std.is(TileGraphic, TextureRegion))
+		if (!Std.is(tileset.graphic, TextureRegion))
 		{
-			region = new Region(0, 0, _tileWidth, _tileHeight);
+			region = new Region(tileset.marginX, tileset.marginY,
+								_tileWidth, _tileHeight,
+								tileset.spacingX, tileset.spacingY);
 			region.width = Std.int(cachedGraphics.bitmap.width / _tileWidth) * _tileWidth;
 			region.height = Std.int(cachedGraphics.bitmap.height / _tileHeight) * _tileHeight;
 		}
 		else
 		{
-			var spriteRegion:TextureRegion = cast TileGraphic;
+			var spriteRegion:TextureRegion = cast tileset.graphic;
 			region = spriteRegion.region.clone();
 			if (region.tileWidth > 0)
 			{
