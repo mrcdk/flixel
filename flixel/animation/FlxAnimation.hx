@@ -3,10 +3,8 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.math.FlxRandom;
 
-/**
- * Just a helper structure for the FlxSprite animation system.
- */
-class FlxAnimation extends FlxBaseAnimation
+@:generic @:remove
+class FlxAnimation<K> extends FlxBaseAnimation<K>
 {
 	/**
 	 * Animation frameRate - the speed in frames per second that the animation should play at.
@@ -17,12 +15,12 @@ class FlxAnimation extends FlxBaseAnimation
 	 * Keeps track of the current frame of animation.
 	 * This is NOT an index into the tile sheet, but the frame number in the animation object.
 	 */
-	public var curFrame(default, set):Int = 0;
+	public var currentFrame(default, set):Int = 0;
 	
 	/**
-	 * Accesor for frames.length
+	 * Accessor for frames.length
 	 */
-	public var numFrames(get, null):Int;
+	public var totalFrames(get, null):Int;
 	
 	/**
 	 * Seconds between frames (basically the framerate)
@@ -49,7 +47,7 @@ class FlxAnimation extends FlxBaseAnimation
 	 * A list of frames stored as int objects
 	 */
 	@:allow(flixel.animation)
-	private var _frames:Array<Int>;
+	public var frames(default, null):Array<Int>;
 	
 	/**
 	 * Internal, used to time each frame of animation.
@@ -62,13 +60,13 @@ class FlxAnimation extends FlxBaseAnimation
 	 * @param	FrameRate	The speed in frames per second that the animation should play at (e.g. 40)
 	 * @param	Looped		Whether or not the animation is looped or just plays once
 	 */
-	public function new(Parent:FlxAnimationController, Name:String, Frames:Array<Int>, FrameRate:Int = 0, Looped:Bool = true)
+	public function new(parent:FlxAnimationController<K>, key:K, frames:Array<Int>, frameRate:Int = 0, looped:Bool = true)
 	{
-		super(Parent, Name);
+		super(parent, key);
 		
-		frameRate = FrameRate;
-		_frames = Frames;
-		looped = Looped;
+		this.frameRate = frameRate;
+		this.frames = frames;
+		this.looped = looped;
 	}
 	
 	/**
@@ -76,25 +74,25 @@ class FlxAnimation extends FlxBaseAnimation
 	 */
 	override public function destroy():Void
 	{
-		_frames = null;
-		name = null;
+		frames = null;
+		key = null;
 		super.destroy();
 	}
 	
-	public function play(Force:Bool = false, Frame:Int = 0):Void
+	public function play(force:Bool = false, frame:Int = 0):Void
 	{
-		if (!Force && (looped || !finished))
+		if (!force && (looped || !finished))
 		{
 			paused = false;
 			finished = false;
-			set_curFrame(curFrame);
+			//set_currentFrame(currentFrame);
 			return;
 		}
 		
 		paused = false;
 		_frameTimer = 0;
 		
-		if ((delay <= 0) || (Frame == (numFrames - 1)))
+		if ((delay <= 0) || (frame == (totalFrames - 1)))
 		{
 			finished = true;
 		}
@@ -103,18 +101,7 @@ class FlxAnimation extends FlxBaseAnimation
 			finished = false;
 		}
 		
-		if (Frame < 0)
-		{
-			curFrame = FlxRandom.int(0, numFrames - 1);
-		}
-		else if (numFrames > Frame)
-		{
-			curFrame = Frame;
-		}
-		else
-		{
-			curFrame = 0;
-		}
+		currentFrame = frame;
 	}
 	
 	public function restart():Void
@@ -136,59 +123,59 @@ class FlxAnimation extends FlxBaseAnimation
 			while (_frameTimer > delay)
 			{
 				_frameTimer = _frameTimer - delay;
-				if (looped && (curFrame == numFrames - 1))
+				if (looped && (currentFrame == totalFrames - 1))
 				{
-					curFrame = 0;
+					currentFrame = 0;
 				}
 				else
 				{
-					curFrame++;
+					currentFrame++;
 				}
 			}
 		}
 	}
 	
-	override public function clone(Parent:FlxAnimationController):FlxAnimation
+	override public function clone(parent:FlxAnimationController<K>):FlxAnimation<K>
 	{
-		return new FlxAnimation(Parent, name, _frames, frameRate, looped);
+		return new FlxAnimation<K>(parent, key, frames, frameRate, looped);
 	}
 	
 	private function set_frameRate(value:Int):Int
 	{
 		delay = 0;
-		frameRate = value;
 		if (value > 0)
 		{
 			delay = 1.0 / value;
 		}
-		return value;
+		return frameRate = value;
 	}
 	
-	private function set_curFrame(Frame:Int):Int
+	private function set_currentFrame(frame:Int):Int
 	{
-		if (Frame >= 0)
+		if (frame >= 0)
 		{
-			if (!looped && Frame >= numFrames)
+			if (!looped && frame >= totalFrames)
 			{
 				finished = true;
-				curFrame = numFrames - 1;
+				currentFrame = totalFrames - 1;
 			}
 			else
 			{
-				curFrame = Frame;
+				currentFrame = frame;
 			}
 		}
 		else
 		{
-			curFrame = FlxRandom.int(0, numFrames - 1);
+			currentFrame = FlxRandom.int(0, totalFrames - 1);
 		}
 		
-		curIndex = _frames[curFrame];
-		return Frame;
+		currentIndex = frames[currentFrame];
+		
+		return currentFrame;
 	}
 	
-	private inline function get_numFrames():Int
+	private inline function get_totalFrames():Int
 	{
-		return _frames.length;
+		return frames.length;
 	}
 }

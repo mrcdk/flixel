@@ -203,7 +203,7 @@ class FlxTypedButton<T:FlxSprite> extends FlxSprite
 	private function setupAnimation(animationName:String, frameIndex:Int):Void
 	{
 		// make sure the animation doesn't contain an invalid frame
-		frameIndex = Std.int(Math.min(frameIndex, animation.frames - 1));
+		frameIndex = Std.int(Math.min(frameIndex, animation.totalFrames - 1));
 		animation.add(animationName, [frameIndex]);
 	}
 	

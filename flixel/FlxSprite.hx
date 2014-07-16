@@ -38,7 +38,7 @@ class FlxSprite extends FlxObject
 	/**
 	 * Class that handles adding and playing animations on this sprite.
 	 */
-	public var animation:FlxAnimationController;
+	public var animation:FlxAnimationController<String>;
 	/**
 	 * The actual Flash BitmapData object representing the current display state of the sprite.
 	 * WARNING: can be null in FLX_RENDER_TILE mode unless you call getFlxFrameBitmapData() beforehand.
@@ -200,7 +200,7 @@ class FlxSprite extends FlxObject
 	{
 		super.initVars();
 		
-		animation = new FlxAnimationController(this);
+		animation = new FlxAnimationController<String>(this);
 		
 		_flashPoint = new Point();
 		_flashRect = new Rectangle();

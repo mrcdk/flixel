@@ -556,9 +556,9 @@ class FlxTypedEmitter<T:(FlxSprite, IFlxParticle)> extends FlxTypedGroup<T>
 		particle.y = FlxRandom.float(y, y + height) - particle.height / 2;
 		
 		// Restart animation
-		if (particle.animation.curAnim != null)
+		if (particle.animation.currentAnimation != null)
 		{
-			particle.animation.curAnim.restart();
+			particle.animation.currentAnimation.restart();
 		}
 		
 		particle.onEmit();

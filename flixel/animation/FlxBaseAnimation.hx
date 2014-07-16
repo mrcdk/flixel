@@ -3,56 +3,54 @@ package flixel.animation;
 import flixel.FlxSprite;
 import flixel.util.FlxDestroyUtil.IFlxDestroyable;
 
-/**
- * ...
- * @author Zaphod
- */
-class FlxBaseAnimation implements IFlxDestroyable
+@:generic @:remove
+class FlxBaseAnimation<K> implements IFlxDestroyable
 {
 	/**
 	 * Animation controller this animation belongs to
 	 */
-	public var parent:FlxAnimationController;
+	public var parent:FlxAnimationController<K>;
 	
 	/**
 	 * String name of the animation (e.g. "walk")
 	 */
-	public var name:String;
+	public var key:K;
 	
 	/**
 	 * Keeps track of the current index into the tile sheet based on animation or rotation.
 	 * Allow access to private var from FlxAnimationController.
 	 */
-	public var curIndex(default, set):Int = 0;
+	public var currentIndex(default, set):Int = 0;
 	
-	private function set_curIndex(Value:Int):Int
+	public function new(parent:FlxAnimationController<K>, key:K)
 	{
-		curIndex = Value;
-		
-		if (parent != null && parent._curAnim == this)
-		{
-			parent.frameIndex = Value;
-		}
-		
-		return Value;
-	}
-	
-	public function new(Parent:FlxAnimationController, Name:String)
-	{
-		parent = Parent;
-		name = Name;
+		this.parent = parent;
+		this.key = key;
 	}
 	
 	public function destroy():Void
 	{
 		parent = null;
-		name = null;
+		key = null;
 	}
 	
 	public function update():Void {}
 	
-	public function clone(Parent:FlxAnimationController):FlxBaseAnimation
+	public function clone(Parent:FlxAnimationController<K>):FlxBaseAnimation<K>
 	{
 		return null;
+	}
+	
+	
+	private function set_currentIndex(value:Int):Int
+	{
+		currentIndex = value;
+		
+		if (parent != null && parent._curAnim == this)
+		{
+			parent.frameIndex = value;
+		}
+		
+		return value;
 	}
 }
