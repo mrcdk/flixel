@@ -21,6 +21,7 @@ import flixel.util.FlxColor;
 import flixel.util.FlxDestroyUtil;
 import flixel.util.FlxSpriteUtil;
 import openfl.display.BlendMode;
+import openfl.filters.BitmapFilter;
 import openfl.geom.Matrix;
 import openfl.Vector;
 
@@ -201,6 +202,8 @@ class FlxCamera extends FlxBasic
 	 */
 	public var followLead(default, null):FlxPoint;
 	
+	public var enableFilters:Bool = true;
+	
 	/**
 	 * Internal, used to render buffer to screen space.
 	 */
@@ -343,6 +346,8 @@ class FlxCamera extends FlxBasic
 	 * Last draw triangles item
 	 */
 	private var _headTriangles:FlxDrawTrianglesItem;
+	
+	private var _filters:Array<BitmapFilter>;
 	
 	/**
 	 * Draw tiles stack items that can be reused
@@ -785,6 +790,8 @@ class FlxCamera extends FlxBasic
 		updateFlash(elapsed);
 		updateFade(elapsed);
 		updateShake(elapsed);
+		
+		flashSprite.filters = enableFilters ? _filters : null;
 		
 		updateFlashSpritePosition();
 	}
@@ -1402,6 +1409,11 @@ class FlxCamera extends FlxBasic
 		updateInternalSpritePositions();
 	}
 	
+	public function setFilters(filters:Array<BitmapFilter>):Void
+	{
+		_filters = filters;
+	}
+	
 	public function onResize():Void
 	{
 		updateFlashOffset();
@@ -1523,6 +1535,7 @@ class FlxCamera extends FlxBasic
 		}
 		return this.visible = visible;
 	}
+	
 }
 
 enum FlxCameraFollowStyle
