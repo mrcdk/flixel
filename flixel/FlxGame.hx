@@ -21,6 +21,7 @@ import flixel.util.FlxColor;
 import flixel.util.FlxDestroyUtil;
 import openfl.Assets;
 import openfl.filters.BitmapFilter;
+import openfl.geom.Rectangle;
 
 #if FLX_POST_PROCESS
 import openfl.display.OpenGLView;
@@ -261,6 +262,10 @@ class FlxGame extends Sprite
 		_initialState = (InitialState == null) ? FlxState : InitialState;
 		
 		addEventListener(Event.ADDED_TO_STAGE, create);
+		
+		#if openfl_next
+		this.cacheAsBitmapBounds = new Rectangle();
+		#end
 	}
 	
 	public function setFilters(filters:Array<BitmapFilter>):Void
@@ -490,6 +495,10 @@ class FlxGame extends Sprite
 		{
 			postProcess.rebuild();
 		}
+		#end
+		
+		#if openfl_next
+		this.cacheAsBitmapBounds.setTo(0, 0, width, height);
 		#end
 	}
 	
@@ -765,6 +774,7 @@ class FlxGame extends Sprite
 		#end
 		
 		this.filters = enableFilters ? _filters : null;
+		
 	}
 	
 	private function updateInput():Void

@@ -683,6 +683,10 @@ class FlxCamera extends FlxBasic
 		_scrollRect = new Sprite();
 		flashSprite.addChild(_scrollRect);
 		
+		#if openfl_next
+		flashSprite.cacheAsBitmapBounds = new Rectangle();
+		#end
+		
 		#if FLX_RENDER_BLIT
 		_scrollRect.addChild(_flashBitmap);
 		#else
@@ -990,6 +994,10 @@ class FlxCamera extends FlxBasic
 			_scrollRect.scrollRect = rect;
 			_scrollRect.x = -0.5 * rect.width;
 			_scrollRect.y = -0.5 * rect.height;
+			
+			#if openfl_next
+			flashSprite.cacheAsBitmapBounds.setTo(_scrollRect.x, _scrollRect.y, rect.width, rect.height);
+			#end
 		}
 	}
 	
